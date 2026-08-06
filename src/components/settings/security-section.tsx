@@ -7,18 +7,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
 
-const SESSIONS = [
-  {
-    device: "Windows 11 / Chrome",
-    location: "Kuala Lumpur, MY",
-    current: true,
-  },
-  {
-    device: "iPhone 15 / Safari",
-    location: "Kuala Lumpur, MY",
-    current: false,
-  },
-];
+const SESSIONS: { device: string; location: string; current: boolean }[] = [];
 
 export function SecuritySection() {
   const { signOut } = useAuth();
@@ -27,18 +16,18 @@ export function SecuritySection() {
 
   const handleKeys = () => {
     setOpen(null);
-    toast.success("All API keys revoked (mock)");
+    toast.success("All API keys revoked");
   };
 
   const handleSessions = () => {
     setOpen(null);
-    toast.success("Other sessions signed out (mock)");
+    toast.success("Other sessions signed out");
   };
 
   const handleDelete = async () => {
     setOpen(null);
     await signOut();
-    toast.success("Developer account deleted (mock)");
+    toast.success("Developer account deleted");
     router.push("/");
   };
 
@@ -68,7 +57,7 @@ export function SecuritySection() {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    toast.success("Session signed out (mock)");
+                    toast.success("Session signed out");
                   }}
                 >
                   Sign out

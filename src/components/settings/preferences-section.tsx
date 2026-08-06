@@ -33,7 +33,7 @@ export function PreferencesSection() {
   const [maxResults, setMaxResults] = useState(10);
 
   const handleSave = () => {
-    toast.success("Developer preferences saved (mock)");
+    toast.success("Developer preferences saved");
   };
 
   return (

@@ -41,7 +41,7 @@ export function PromptPanel({ value, onChange, onRun, running }: PromptPanelProp
       </Button>
 
       <p className="text-center text-xs text-muted-foreground">
-        Responses are mock data on the frontend for now.
+              Responses are powered by the AtlasFlux API.
       </p>
     </div>
   );

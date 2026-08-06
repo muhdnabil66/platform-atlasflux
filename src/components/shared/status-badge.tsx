@@ -9,6 +9,7 @@ export const STATUS_CONFIG: Record<
 > = {
   success: { label: "Successful", tone: "success" },
   succeeded: { label: "Succeeded", tone: "success" },
+  billed: { label: "Billed", tone: "success" },
   failed: { label: "Failed", tone: "destructive" },
   rate_limited: { label: "Rate limited", tone: "warning" },
   pending: { label: "Pending", tone: "warning" },

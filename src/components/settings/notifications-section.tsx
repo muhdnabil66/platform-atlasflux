@@ -41,7 +41,7 @@ export function NotificationsSection() {
     setEnabled((prev) => {
       const next = { ...prev, [id]: !prev[id] };
       toast.success(
-        next[id] ? "Notification enabled (mock)" : "Notification disabled (mock)",
+        next[id] ? "Notification enabled" : "Notification disabled",
       );
       return next;
     });

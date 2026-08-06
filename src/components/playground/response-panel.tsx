@@ -45,7 +45,7 @@ export function ResponsePanel({ response, running, config }: ResponsePanelProps)
           <EmptyState
             icon={TerminalSquare}
             title="Run a request"
-            description="Enter a prompt and press Run request to see a mock response here."
+            description="Enter a prompt and press Run request to see the response here."
             className="py-16"
           />
         )}
@@ -63,19 +63,19 @@ export function ResponsePanel({ response, running, config }: ResponsePanelProps)
           <div className="flex flex-col gap-4">
             <div className="min-h-56 rounded-lg border bg-background p-4">
               <StreamedText
-                key={`${response.usage.requestId}-${config.stream}`}
-                text={response.content}
+                key={`${response.usage?.requestId ?? "none"}-${config.stream}`}
+                text={response.content ?? ""}
                 stream={config.stream}
               />
             </div>
 
-            {response.citations.length > 0 && (
+            {response.citations?.length > 0 && (
               <div>
                 <h4 className="text-sm font-semibold">Citations</h4>
                 <ul className="mt-2 flex flex-col gap-2">
-                  {response.citations.map((citation) => (
+                  {response.citations.map((citation, i) => (
                     <li
-                      key={citation.index}
+                      key={citation.url ?? i}
                       className="flex items-start gap-2.5 rounded-lg border bg-background p-3"
                     >
                       <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium tabular-nums">
@@ -101,7 +101,7 @@ export function ResponsePanel({ response, running, config }: ResponsePanelProps)
               </div>
             )}
 
-            <UsageSummaryPanel usage={response.usage} />
+            {response.usage && <UsageSummaryPanel usage={response.usage} />}
           </div>
         )}
       </TabsContent>
@@ -145,22 +145,26 @@ interface StreamedTextProps {
 }
 
 function StreamedText({ text, stream }: StreamedTextProps) {
-  const [displayed, setDisplayed] = useState(stream ? "" : text);
+  const safeText = text ?? "";
+  const [displayed, setDisplayed] = useState(stream ? "" : safeText);
   const [streaming, setStreaming] = useState(stream);
 
   useEffect(() => {
-    if (!stream) return;
+    if (!stream) {
+      setDisplayed(safeText);
+      return;
+    }
     let index = 0;
     const interval = setInterval(() => {
       index += 4 + Math.floor(Math.random() * 6);
-      setDisplayed(text.slice(0, index));
-      if (index >= text.length) {
+      setDisplayed(safeText.slice(0, index));
+      if (index >= safeText.length) {
         clearInterval(interval);
         setStreaming(false);
       }
     }, 16);
     return () => clearInterval(interval);
-  }, [text, stream]);
+  }, [safeText, stream]);
 
   return (
     <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">

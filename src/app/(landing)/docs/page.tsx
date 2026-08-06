@@ -96,8 +96,7 @@ export default function DocsPage() {
         <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[13px]">
           https://api.atlasflux.my
         </code>
-        . This page is a frontend preview; full endpoint reference will follow
-        with the backend.
+        .
       </p>
 
       <section className="mt-12">

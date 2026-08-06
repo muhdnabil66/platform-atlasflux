@@ -7,7 +7,7 @@ const COLUMNS = [
     links: [
       { label: "Models", href: "/models" },
       { label: "Pricing", href: "/pricing" },
-      { label: "Documentation", href: "/docs" },
+      { label: "Documentation", href: "https://api-docs.atlasflux.my" },
       { label: "API status", href: "https://status.atlasflux.my" },
     ],
   },

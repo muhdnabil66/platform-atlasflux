@@ -30,7 +30,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
         </div>
         <div className="border-t p-3">
           <Button asChild variant="outline" className="w-full" size="sm">
-            <Link href="/docs">View documentation</Link>
+            <Link href="https://api-docs.atlasflux.my">View documentation</Link>
           </Button>
         </div>
       </SheetContent>

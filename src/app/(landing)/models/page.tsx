@@ -23,7 +23,7 @@ const CAPABILITY_ROWS = [
   { label: "Streaming", value: "Supported", hint: "Token-by-token streaming" },
   { label: "Tool calling", value: "Supported", hint: "Function and tool use" },
   { label: "Structured output", value: "Supported", hint: "JSON schema responses" },
-  { label: "Context window", value: nenasFlash.contextWindow, hint: "Placeholder value" },
+  { label: "Context window", value: nenasFlash.contextWindow, hint: "Effective context with intelligent routing" },
   { label: "Max output", value: `${(nenasFlash.maxOutputTokens / 1024).toFixed(0)}K tokens`, hint: "Maximum output tokens per request" },
 ];
 

@@ -37,8 +37,7 @@ export function CostCalculator() {
         Cost calculator
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Estimate the cost of a single request with web search. Calculations are
-        frontend-only.
+        Estimate the cost of a single request with web search.
       </p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

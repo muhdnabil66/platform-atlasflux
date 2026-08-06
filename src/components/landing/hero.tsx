@@ -55,7 +55,7 @@ export function Hero() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/docs">
+              <Link href="https://api-docs.atlasflux.my">
                 <BookOpen className="size-4" aria-hidden="true" />
                 View documentation
               </Link>

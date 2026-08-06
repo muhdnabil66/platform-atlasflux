@@ -31,7 +31,7 @@ export default function LandingPage() {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="/docs">Read the docs</Link>
+                <Link href="https://api-docs.atlasflux.my">Read the docs</Link>
               </Button>
             </div>
           </div>

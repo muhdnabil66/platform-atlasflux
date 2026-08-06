@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type {
@@ -9,10 +9,9 @@ import type {
   RequestStatus,
   SearchDepth,
   UsageFilters,
+  UsageSummary,
 } from "@/types/api";
 import { getUsageData } from "@/lib/api-client";
-import { useMockData } from "@/hooks/use-mock-data";
-import { usageFilterOptions } from "@/lib/mock-data/usage";
 import { PageHeader } from "@/components/shared/page-header";
 import { DateRangeFilter } from "@/components/dashboard/date-range-filter";
 import { MetricChart } from "@/components/usage/metric-chart";
@@ -69,15 +68,25 @@ const CHART_COLORS = [
 export default function UsagePage() {
   const [filters, setFilters] = useState<UsageFilters>(DEFAULT_FILTERS);
 
-  const { data, loading } = useMockData(() => getUsageData(filters), [filters]);
+  const [data, setData] = useState<UsageSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getUsageData(filters).then((res) => {
+      if (!cancelled) { setData(res); setLoading(false); }
+    }).catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [filters]);
 
   const derived = useMemo(() => {
     if (!data) return null;
     return data.series.map((point) => ({
       ...point,
-      webSearches: Math.round(point.requests * 0.11),
-      latencyMs: Math.round(620 + ((point.timestamp % 47) / 46) * 320),
-      errorRate: Number((1.1 + ((point.timestamp % 19) / 18) * 2.4).toFixed(2)),
+      webSearches: 0,
+      latencyMs: 0,
+      errorRate: 0,
     }));
   }, [data]);
 
@@ -86,7 +95,7 @@ export default function UsagePage() {
   };
 
   const handleExport = () => {
-    toast.success("CSV export queued (frontend placeholder)");
+    toast.success("CSV export started");
   };
 
   return (
@@ -123,9 +132,6 @@ export default function UsagePage() {
                 value={filters.apiKey}
                 options={[
                   { value: "all", label: "All keys" },
-                  { value: "key_1", label: "Production app" },
-                  { value: "key_2", label: "Local development" },
-                  { value: "key_3", label: "CI pipeline" },
                 ]}
                 onValueChange={(v) => setFilter({ apiKey: v })}
               />
@@ -134,8 +140,8 @@ export default function UsagePage() {
                 value={filters.environment}
                 options={[
                   { value: "all", label: "All" },
-                  { value: "production", label: "Production" },
-                  { value: "development", label: "Development" },
+                  { value: "live", label: "Production" },
+                  { value: "test", label: "Development" },
                 ]}
                 onValueChange={(v) => setFilter({ environment: v as "all" | Environment })}
               />
@@ -144,7 +150,10 @@ export default function UsagePage() {
                 value={filters.endpoint}
                 options={[
                   { value: "all", label: "All" },
-                  ...usageFilterOptions.endpoints.map((e) => ({ value: e, label: e })),
+                  { value: "/v1/responses", label: "/v1/responses" },
+                  { value: "/v1/chat/completions", label: "/v1/chat/completions" },
+                  { value: "/v1/search", label: "/v1/search" },
+                  { value: "/v1/embeddings", label: "/v1/embeddings" },
                 ]}
                 onValueChange={(v) => setFilter({ endpoint: v })}
               />
@@ -153,7 +162,9 @@ export default function UsagePage() {
                 value={filters.status}
                 options={[
                   { value: "all", label: "All" },
-                  ...usageFilterOptions.statuses.map((s) => ({ value: s, label: s })),
+                  { value: "succeeded", label: "Succeeded" },
+                  { value: "failed", label: "Failed" },
+                  { value: "billed", label: "Billed" },
                 ]}
                 onValueChange={(v) => setFilter({ status: v as "all" | RequestStatus })}
               />
@@ -162,7 +173,9 @@ export default function UsagePage() {
                 value={filters.reasoning}
                 options={[
                   { value: "all", label: "All" },
-                  ...usageFilterOptions.reasoning.map((r) => ({ value: r, label: r })),
+                  { value: "low", label: "low" },
+                  { value: "medium", label: "medium" },
+                  { value: "high", label: "high" },
                 ]}
                 onValueChange={(v) => setFilter({ reasoning: v as "all" | ReasoningEffort })}
               />
@@ -171,7 +184,11 @@ export default function UsagePage() {
                 value={filters.searchDepth}
                 options={[
                   { value: "all", label: "All" },
-                  ...usageFilterOptions.searchDepths.map((d) => ({ value: d, label: d })),
+                  { value: "instant", label: "instant" },
+                  { value: "fast", label: "fast" },
+                  { value: "balanced", label: "balanced" },
+                  { value: "deep", label: "deep" },
+                  { value: "reasoning", label: "reasoning" },
                 ]}
                 onValueChange={(v) => setFilter({ searchDepth: v as "all" | SearchDepth })}
               />

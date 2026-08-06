@@ -87,9 +87,8 @@ export default function LogsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="success">Successful</SelectItem>
+              <SelectItem value="succeeded">Successful</SelectItem>
               <SelectItem value="failed">Failed</SelectItem>
-              <SelectItem value="rate_limited">Rate limited</SelectItem>
             </SelectContent>
           </Select>
         </CardContent>

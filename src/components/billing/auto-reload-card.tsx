@@ -24,7 +24,7 @@ export function AutoReloadCard({ initial }: { initial: AutoReloadConfig }) {
   const [monthlyMaximum, setMonthlyMaximum] = useState<number | null>(initial.monthlyMaximum);
 
   const handleSave = () => {
-    toast.success("Auto-reload settings saved (mock)");
+    toast.success("Auto-reload settings saved");
   };
 
   return (

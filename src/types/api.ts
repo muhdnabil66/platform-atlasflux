@@ -5,7 +5,7 @@ export type RequestStatus =
   | "pending"
   | "cancelled";
 
-export type Environment = "production" | "development";
+export type Environment = "live" | "test";
 
 export type TimeRange = "24h" | "7d" | "30d" | "90d";
 
@@ -133,6 +133,7 @@ export interface PlaygroundUsage {
   inputTokens: number;
   outputTokens: number;
   reasoningTokens: number;
+  cachedTokens: number;
   searches: number;
   contentPages: number;
   costs: CostBreakdown;

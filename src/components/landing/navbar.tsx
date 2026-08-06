@@ -12,7 +12,7 @@ const LINKS = [
   { label: "Product", href: "/#product" },
   { label: "Models", href: "/#models" },
   { label: "Pricing", href: "/#pricing" },
-  { label: "Documentation", href: "/docs" },
+  { label: "Documentation", href: "https://api-docs.atlasflux.my" },
   { label: "Status", href: "https://status.atlasflux.my" },
 ];
 

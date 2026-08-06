@@ -31,7 +31,7 @@ import type { CreatedApiKey } from "@/types/api";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Key name is required").max(64, "Key name is too long"),
-  environment: z.enum(["development", "production"]),
+  environment: z.enum(["test", "live"]),
   monthlySpendLimit: z
     .number({ error: "Enter a valid amount" })
     .positive("Amount must be greater than 0")
@@ -64,7 +64,7 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: CreateKeyDial
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
-      environment: "development",
+      environment: "test",
       monthlySpendLimit: undefined,
       expiration: "",
     },
@@ -73,10 +73,14 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: CreateKeyDial
   const environment = watch("environment");
 
   const close = () => {
-    onOpenChange(false);
+    if (created) {
+      created.secret = "";
+    }
     setCreated(null);
     setConfirmed(false);
     reset();
+    navigator.clipboard?.writeText("").catch(() => undefined);
+    onOpenChange(false);
   };
 
   const onSubmit = async (values: FormValues) => {
@@ -119,10 +123,11 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: CreateKeyDial
                 <code
                   id="created-key"
                   className="flex-1 overflow-x-auto rounded-lg border bg-muted/50 px-3 py-2 font-mono text-[13px] break-all"
+                  style={{ filter: confirmed ? "blur(4px)" : "none", userSelect: confirmed ? "none" : "auto" }}
                 >
                   {created.secret}
                 </code>
-                <CopyButton value={created.secret} label="Copy" ariaLabel="Copy full API key" />
+                {!confirmed && <CopyButton value={created.secret} label="Copy" ariaLabel="Copy full API key" />}
               </div>
             </div>
 
@@ -185,8 +190,8 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: CreateKeyDial
                     <SelectValue placeholder="Select environment" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="development">Development</SelectItem>
-                    <SelectItem value="production">Production</SelectItem>
+                    <SelectItem value="test">Development</SelectItem>
+                    <SelectItem value="live">Production</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">

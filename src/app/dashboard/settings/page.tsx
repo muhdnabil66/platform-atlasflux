@@ -90,8 +90,7 @@ export default function SettingsPage() {
 
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Settings className="size-3.5" aria-hidden="true" />
-        All settings are mocked in this preview. They will connect to your
-        AtlasFlux account when the backend is live.
+        Settings are managed through your AtlasFlux account.
       </p>
     </div>
   );

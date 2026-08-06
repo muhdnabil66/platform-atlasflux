@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal, Pencil, ShieldAlert, Trash2, Copy } from "lucide-react";
+import { MoreHorizontal, Pencil, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { ApiKey } from "@/types/api";
+import { deleteApiKey } from "@/lib/api-client";
 import {
   Table,
   TableBody,
@@ -32,7 +33,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { CopyButton } from "@/components/shared/copy-button";
 import { formatDate, formatCompactNumber, formatRelativeTime } from "@/lib/format";
 
 interface ApiKeysTableProps {
@@ -65,10 +65,15 @@ export function ApiKeysTable({ keys, onKeysChange }: ApiKeysTableProps) {
     setRevokeTarget(null);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    onKeysChange(keys.filter((k) => k.id !== deleteTarget.id));
-    toast.success("Key deleted");
+    try {
+      await deleteApiKey(deleteTarget.id);
+      onKeysChange(keys.filter((k) => k.id !== deleteTarget.id));
+      toast.success("Key deleted");
+    } catch {
+      toast.error("Failed to delete key");
+    }
     setDeleteTarget(null);
   };
 
@@ -97,10 +102,7 @@ export function ApiKeysTable({ keys, onKeysChange }: ApiKeysTableProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-1.5">
-                    <code className="font-mono text-[12px]">{key.prefix}...</code>
-                    <CopyButton value={key.prefix} ariaLabel={`Copy prefix for ${key.name}`} className="size-6 px-0" />
-                  </div>
+                  <code className="font-mono text-[12px]">{key.prefix}...</code>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{formatDate(key.created)}</TableCell>
                 <TableCell className="text-muted-foreground">
@@ -125,14 +127,6 @@ export function ApiKeysTable({ keys, onKeysChange }: ApiKeysTableProps) {
                         }}
                       >
                         <Pencil /> Rename
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          navigator.clipboard?.writeText(key.prefix).catch(() => undefined);
-                          toast.success("Prefix copied to clipboard");
-                        }}
-                      >
-                        <Copy className="size-4" /> Copy prefix
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem

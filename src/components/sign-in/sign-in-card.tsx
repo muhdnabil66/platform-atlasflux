@@ -1,48 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSignIn, useUser } from "@clerk/nextjs";
 import { Loader2, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/components/providers/auth-provider";
 
-/**
- * Clerk-compatible sign-in card.
- *
- * When NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY are configured,
- * replace this card with the Clerk <SignIn /> component. Today it uses the
- * mock auth layer so the flow can be tested without a backend.
- */
 export function SignInCard() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const { signIn, isClerkConfigured } = useAuth();
+  const [password, setPassword] = useState("");
+  const { signIn } = useSignIn();
+  const { isSignedIn } = useUser();
   const router = useRouter();
 
-  const handleContinue = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isSignedIn) {
+      router.push("/dashboard/overview");
+    }
+  }, [isSignedIn, router]);
+
+  const handleEmailPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) {
-      toast.error("Enter your email to continue");
+    if (!signIn) return;
+    if (!email.trim() || !password.trim()) {
+      toast.error("Enter your email and password");
       return;
     }
+
     setLoading(true);
-    await signIn();
-    setLoading(false);
-    toast.success("Signed in. Redirecting to your dashboard");
-    router.push("/dashboard");
+    try {
+      // Step 1: Create sign-in with identifier
+      const createResult = await signIn.create({
+        identifier: email,
+      });
+      if (createResult.error) {
+        toast.error(createResult.error.message || "Sign in failed");
+        return;
+      }
+
+      // Step 2: Submit password
+      const passwordResult = await signIn.password({ password });
+      if (passwordResult.error) {
+        toast.error(passwordResult.error.message || "Invalid password");
+        return;
+      }
+
+      // Step 3: Finalize - set the session as active
+      const finalizeResult = await signIn.finalize();
+      if (finalizeResult.error) {
+        toast.error(finalizeResult.error.message || "Failed to complete sign in");
+        return;
+      }
+
+      toast.success("Signed in successfully");
+      router.push("/dashboard/overview");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Sign in failed";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogle = async () => {
+    if (!signIn) return;
     setGoogleLoading(true);
-    await signIn();
-    setGoogleLoading(false);
-    toast.success("Signed in with Google (mock)");
-    router.push("/dashboard");
+    try {
+      await signIn.sso({
+        strategy: "oauth_google",
+        redirectUrl: "/sso-callback",
+        redirectCallbackUrl: "/dashboard/overview",
+      });
+    } catch {
+      toast.error("Google sign-in failed");
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -56,20 +94,13 @@ export function SignInCard() {
         </p>
       </div>
 
-      {isClerkConfigured && (
-        <p className="mt-3 rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
-          Clerk is configured. The embedded <code className="font-mono">&lt;SignIn /&gt;</code>{" "}
-          component will render here.
-        </p>
-      )}
-
       <div className="mt-6 flex flex-col gap-3">
         <Button
           type="button"
           variant="outline"
           size="lg"
           className="w-full"
-          disabled={googleLoading}
+          disabled={googleLoading || !signIn}
           onClick={handleGoogle}
         >
           {googleLoading ? (
@@ -86,7 +117,7 @@ export function SignInCard() {
           <Separator className="flex-1" />
         </div>
 
-        <form onSubmit={handleContinue} className="flex flex-col gap-3">
+        <form onSubmit={handleEmailPassword} className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="email">Email address</Label>
             <div className="relative">
@@ -103,13 +134,31 @@ export function SignInCard() {
               />
             </div>
           </div>
-          <Button type="submit" size="lg" disabled={loading} className="w-full">
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-9"
+                required
+              />
+            </div>
+          </div>
+
+          <Button type="submit" size="lg" disabled={loading || !signIn} className="w-full">
             {loading ? (
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
             ) : (
               <Lock className="size-4" aria-hidden="true" />
             )}
-            Continue with email
+            Sign in
           </Button>
         </form>
       </div>

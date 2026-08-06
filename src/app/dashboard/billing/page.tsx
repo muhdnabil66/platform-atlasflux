@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Coins, Gauge, TrendingUp, Wallet } from "lucide-react";
 import type { BillingSummary, Transaction } from "@/types/api";
 import { getBilling, getTransactions } from "@/lib/api-client";
-import { useMockData } from "@/hooks/use-mock-data";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { AddFundsDialog } from "@/components/billing/add-funds-dialog";
 import { AutoReloadCard } from "@/components/billing/auto-reload-card";
 import { TransactionTable } from "@/components/billing/transaction-table";
-import { topUpOptions, popularTopUp } from "@/lib/mock-data/billing";
+import { topUpOptions, popularTopUp } from "@/config/billing";
 import { formatCompactNumber, formatRM } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -23,8 +22,14 @@ export default function BillingPage() {
   const [preset, setPreset] = useState<number | undefined>(undefined);
   const [balance, setBalance] = useState<number | null>(null);
 
-  const { data: billing } = useMockData<BillingSummary>(getBilling, []);
-  const { data: transactions, loading: txLoading } = useMockData<Transaction[]>(getTransactions, []);
+  const [billing, setBilling] = useState<BillingSummary | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[] | null>(null);
+  const [txLoading, setTxLoading] = useState(true);
+
+  useEffect(() => {
+    getBilling().then(setBilling).catch(() => {});
+    getTransactions().then(setTransactions).finally(() => setTxLoading(false)).catch(() => {});
+  }, []);
 
   const openDialog = (amount?: number) => {
     setPreset(amount);

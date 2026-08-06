@@ -47,7 +47,7 @@ export const dashboardNavigation: NavSection[] = [
   {
     title: "Resources",
     items: [
-      { title: "Documentation", href: "/docs", icon: BookOpen },
+      { title: "Documentation", href: "https://api-docs.atlasflux.my", icon: BookOpen },
       { title: "Settings", href: "/dashboard/settings", icon: Settings },
       { title: "AtlasFlux AI", href: "https://ai.atlasflux.my", icon: FileText },
     ],

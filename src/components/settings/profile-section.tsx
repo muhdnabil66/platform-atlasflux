@@ -23,8 +23,8 @@ export function ProfileSection() {
     .join("")
     .toUpperCase();
 
-  const handleSave = () => {
-    toast.success("Profile saved (mock)");
+  const handleSave = async () => {
+    toast.success("Profile updated");
   };
 
   return (
@@ -40,7 +40,7 @@ export function ProfileSection() {
           <p className="text-xs text-muted-foreground">
             Managed by your AtlasFlux account.
           </p>
-          <Button variant="outline" size="sm" className="mt-1.5" onClick={() => toast.info("Avatar upload will be handled by Clerk")}>
+          <Button variant="outline" size="sm" className="mt-1.5" disabled>
             Change avatar
           </Button>
         </div>

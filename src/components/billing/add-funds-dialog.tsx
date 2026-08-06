@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { topUpOptions, popularTopUp } from "@/lib/mock-data/billing";
+import { topUpOptions, popularTopUp } from "@/config/billing";
+import { API_BASE_URL } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { formatRM } from "@/lib/format";
 
@@ -66,18 +67,38 @@ export function AddFundsDialog({ open, onOpenChange, onAdded, presetAmount }: Ad
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!Number.isFinite(amount) || amount < 10 || amount > 500) {
       toast.error("Enter an amount between RM10 and RM500");
       return;
     }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      // Convert MYR to sen (1 MYR = 100 sen)
+      const amountSen = Math.round(amount * 100);
+
+      const res = await fetch(`${API_BASE_URL}/dashboard/billing/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ amountSen }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error?.message ?? "Failed to create checkout session");
+      }
+
+      const data = await res.json() as { url: string; session_id: string };
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to start checkout";
+      toast.error(message);
       setLoading(false);
-      onAdded?.(amount);
-      toast.success(`Redirecting to Stripe Checkout to add ${formatRM(amount)} (mock)`);
-      onOpenChange(false);
-    }, 900);
+    }
   };
 
   return (
@@ -170,7 +191,7 @@ export function AddFundsDialog({ open, onOpenChange, onAdded, presetAmount }: Ad
                 <CreditCard className="size-4" aria-hidden="true" />
                 Payment method
               </span>
-              <span className="font-medium">Card</span>
+              <span className="font-medium">Card / FPX</span>
             </div>
             <p className="mt-1.5 flex items-start gap-2 text-xs text-muted-foreground">
               <ExternalLink className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />

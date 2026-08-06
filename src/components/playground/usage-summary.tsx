@@ -15,13 +15,17 @@ export function UsageSummaryPanel({ usage }: UsageSummaryPanelProps) {
         </span>
       </div>
 
+      <div className="mt-2 text-[11px] font-mono text-muted-foreground truncate">
+        {usage.requestId}
+      </div>
+
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3">
-        <UsageRow label="Request ID" value={usage.requestId} mono />
         <UsageRow label="Routing" value={usage.routingCategory} />
         <UsageRow label="Latency" value={formatDuration(usage.latencyMs)} />
         <UsageRow label="Input tokens" value={formatCompactNumber(usage.inputTokens)} />
         <UsageRow label="Output tokens" value={formatCompactNumber(usage.outputTokens)} />
         <UsageRow label="Reasoning tokens" value={formatCompactNumber(usage.reasoningTokens)} />
+        <UsageRow label="Cached tokens" value={formatCompactNumber(usage.cachedTokens)} />
         <UsageRow label="Searches" value={String(usage.searches)} />
         <UsageRow label="Content pages" value={String(usage.contentPages)} />
         <UsageRow
