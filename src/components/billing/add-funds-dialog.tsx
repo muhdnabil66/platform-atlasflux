@@ -91,7 +91,7 @@ export function AddFundsDialog({ open, onOpenChange, onAdded, presetAmount }: Ad
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ amountSen }),
+        body: JSON.stringify({ amount_sen: amountSen }),
       });
 
       if (!res.ok) {
