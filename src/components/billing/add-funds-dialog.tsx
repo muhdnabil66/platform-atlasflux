@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { CreditCard, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -26,6 +27,7 @@ interface AddFundsDialogProps {
 }
 
 export function AddFundsDialog({ open, onOpenChange, onAdded, presetAmount }: AddFundsDialogProps) {
+  const { getToken } = useAuth();
   const [amount, setAmount] = useState<number>(popularTopUp);
   const [custom, setCustom] = useState(false);
   const [customValue, setCustomValue] = useState("");
@@ -78,10 +80,17 @@ export function AddFundsDialog({ open, onOpenChange, onAdded, presetAmount }: Ad
       // Convert MYR to sen (1 MYR = 100 sen)
       const amountSen = Math.round(amount * 100);
 
+      const token = await getToken();
+      if (!token) {
+        throw new Error("Not signed in");
+      }
+
       const res = await fetch(`${API_BASE_URL}/dashboard/billing/checkout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ amountSen }),
       });
 
