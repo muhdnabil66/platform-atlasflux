@@ -486,7 +486,7 @@ export function deleteAccount(): Promise<{ ok: boolean }> {
 export function createSetupIntent(): Promise<{ client_secret: string; setup_intent_id: string; customer_id: string }> {
   return apiRequest<{ client_secret: string; setup_intent_id: string; customer_id: string }>(
     "/dashboard/billing/setup-intent",
-    { method: "POST" }
+    { method: "POST", body: "{}" }
   );
 }
 
