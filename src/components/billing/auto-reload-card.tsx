@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { AutoReloadConfig } from "@/types/api";
+import { updateSettings } from "@/lib/api-client";
 import {
   Card,
   CardContent,
@@ -22,9 +23,25 @@ export function AutoReloadCard({ initial }: { initial: AutoReloadConfig }) {
   const [threshold, setThreshold] = useState(initial.threshold);
   const [amount, setAmount] = useState(initial.amount);
   const [monthlyMaximum, setMonthlyMaximum] = useState<number | null>(initial.monthlyMaximum);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    toast.success("Auto-reload settings saved");
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateSettings({
+        auto_reload: {
+          enabled,
+          threshold_myr: threshold,
+          amount_myr: amount,
+          monthly_max_myr: monthlyMaximum,
+        },
+      });
+      toast.success("Auto-reload settings saved");
+    } catch {
+      toast.error("Failed to save auto-reload settings");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -113,8 +130,8 @@ export function AutoReloadCard({ initial }: { initial: AutoReloadConfig }) {
           </p>
         )}
         <div className="mt-4">
-          <Button onClick={handleSave} disabled={!enabled}>
-            Save settings
+          <Button onClick={handleSave} disabled={!enabled || saving}>
+            {saving ? "Saving..." : "Save settings"}
           </Button>
         </div>
       </CardContent>

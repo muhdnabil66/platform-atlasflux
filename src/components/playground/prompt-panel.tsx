@@ -9,9 +9,10 @@ interface PromptPanelProps {
   onChange: (value: string) => void;
   onRun: () => void;
   running: boolean;
+  hasCredit: boolean;
 }
 
-export function PromptPanel({ value, onChange, onRun, running }: PromptPanelProps) {
+export function PromptPanel({ value, onChange, onRun, running, hasCredit }: PromptPanelProps) {
   return (
     <div className="flex h-full flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -31,13 +32,13 @@ export function PromptPanel({ value, onChange, onRun, running }: PromptPanelProp
         className="min-h-48 flex-1 resize-none font-mono text-[13px] leading-relaxed"
       />
 
-      <Button size="lg" onClick={onRun} disabled={running} className="w-full">
+      <Button size="lg" onClick={onRun} disabled={running || !hasCredit} className="w-full">
         {running ? (
           <Loader2 className="size-4 animate-spin" aria-hidden="true" />
         ) : (
           <Play className="size-4" aria-hidden="true" />
         )}
-        {running ? "Running request..." : "Run request"}
+        {!hasCredit ? "Insufficient credit" : running ? "Running request..." : "Run request"}
       </Button>
 
       <p className="text-center text-xs text-muted-foreground">

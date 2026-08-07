@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/components/providers/auth-provider";
+import { updateProfile } from "@/lib/api-client";
 
 export function ProfileSection() {
   const { user } = useAuth();
   const [name, setName] = useState(user?.name ?? "");
   const [email] = useState(user?.email ?? "");
+  const [saving, setSaving] = useState(false);
 
   if (!user) return null;
 
@@ -24,7 +26,15 @@ export function ProfileSection() {
     .toUpperCase();
 
   const handleSave = async () => {
-    toast.success("Profile updated");
+    setSaving(true);
+    try {
+      await updateProfile({ name });
+      toast.success("Profile updated");
+    } catch {
+      toast.error("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -61,7 +71,9 @@ export function ProfileSection() {
       </div>
 
       <div>
-        <Button onClick={handleSave}>Save changes</Button>
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? "Saving..." : "Save changes"}
+        </Button>
       </div>
     </div>
   );

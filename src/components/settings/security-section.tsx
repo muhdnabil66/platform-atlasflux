@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
+import { revokeAllApiKeys, deleteAccount } from "@/lib/api-client";
 
 const SESSIONS: { device: string; location: string; current: boolean }[] = [];
 
@@ -13,10 +14,19 @@ export function SecuritySection() {
   const { signOut } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState<"keys" | "sessions" | "account" | null>(null);
+  const [loading, setLoading] = useState<"keys" | "sessions" | "account" | null>(null);
 
-  const handleKeys = () => {
+  const handleKeys = async () => {
     setOpen(null);
-    toast.success("All API keys revoked");
+    setLoading("keys");
+    try {
+      const result = await revokeAllApiKeys();
+      toast.success(`${result.revoked} API key(s) revoked`);
+    } catch {
+      toast.error("Failed to revoke API keys");
+    } finally {
+      setLoading(null);
+    }
   };
 
   const handleSessions = () => {
@@ -26,9 +36,17 @@ export function SecuritySection() {
 
   const handleDelete = async () => {
     setOpen(null);
-    await signOut();
-    toast.success("Developer account deleted");
-    router.push("/");
+    setLoading("account");
+    try {
+      await deleteAccount();
+      await signOut();
+      toast.success("Developer account deleted");
+      router.push("/");
+    } catch {
+      toast.error("Failed to delete account");
+    } finally {
+      setLoading(null);
+    }
   };
 
   return (
@@ -82,8 +100,9 @@ export function SecuritySection() {
             size="sm"
             onClick={() => setOpen("keys")}
             className="text-destructive"
+            disabled={loading === "keys"}
           >
-            Revoke all keys
+            {loading === "keys" ? "Revoking..." : "Revoke all keys"}
           </Button>
           <ConfirmDialog
             open={open === "keys"}
@@ -133,8 +152,9 @@ export function SecuritySection() {
             variant="destructive"
             size="sm"
             onClick={() => setOpen("account")}
+            disabled={loading === "account"}
           >
-            Delete account
+            {loading === "account" ? "Deleting..." : "Delete account"}
           </Button>
           <ConfirmDialog
             open={open === "account"}

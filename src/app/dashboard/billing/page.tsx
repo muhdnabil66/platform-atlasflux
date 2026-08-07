@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { AddFundsDialog } from "@/components/billing/add-funds-dialog";
 import { AutoReloadCard } from "@/components/billing/auto-reload-card";
+import { PaymentCardSection } from "@/components/billing/payment-card-section";
 import { TransactionTable } from "@/components/billing/transaction-table";
 import { topUpOptions, popularTopUp } from "@/config/billing";
 import { formatCompactNumber, formatRM } from "@/lib/format";
@@ -134,6 +135,8 @@ export default function BillingPage() {
       ) : (
         <Skeleton className="h-64 w-full" />
       )}
+
+      <PaymentCardSection />
 
       <Card>
         <CardHeader>

@@ -434,3 +434,70 @@ export function getRequestLogs(opts: {
 export function getCurrentUser(): Promise<{ id: string; name: string; email: string; avatarUrl: string | null; clerkId: string | null }> {
   return apiRequest<{ id: string; name: string; email: string; avatarUrl: string | null; clerkId: string | null }>("/dashboard/settings");
 }
+
+/* ------------------------------------------------------------------ */
+/*  Settings / Profile                                                */
+/* ------------------------------------------------------------------ */
+
+export function updateProfile(data: { name?: string }): Promise<{ ok: boolean }> {
+  return apiRequest<{ ok: boolean }>("/dashboard/profile", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateSettings(data: {
+  auto_reload?: { enabled: boolean; threshold_myr?: number | null; amount_myr?: number | null; monthly_max_myr?: number | null };
+  low_balance_threshold_myr?: number | null;
+  monthly_spend_limit_myr?: number | null;
+  preferences?: Record<string, unknown>;
+  notifications?: Record<string, boolean>;
+}): Promise<{ settings: unknown }> {
+  return apiRequest<{ settings: unknown }>("/dashboard/settings", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function getSettings(): Promise<{ settings: Record<string, unknown> | null }> {
+  return apiRequest<{ settings: Record<string, unknown> | null }>("/dashboard/settings");
+}
+
+/* ------------------------------------------------------------------ */
+/*  Security                                                          */
+/* ------------------------------------------------------------------ */
+
+export function revokeAllApiKeys(): Promise<{ revoked: number }> {
+  return apiRequest<{ revoked: number }>("/dashboard/api-keys/revoke-all", {
+    method: "POST",
+  });
+}
+
+export function deleteAccount(): Promise<{ ok: boolean }> {
+  return apiRequest<{ ok: boolean }>("/dashboard/account", {
+    method: "DELETE",
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Payment Card / Auto-Reload                                        */
+/* ------------------------------------------------------------------ */
+
+export function createSetupIntent(): Promise<{ client_secret: string; setup_intent_id: string; customer_id: string }> {
+  return apiRequest<{ client_secret: string; setup_intent_id: string; customer_id: string }>(
+    "/dashboard/billing/setup-intent",
+    { method: "POST" }
+  );
+}
+
+export function getPaymentMethod(): Promise<{ payment_method: { id: string; brand: string; last4: string; exp_month: number; exp_year: number } | null }> {
+  return apiRequest<{ payment_method: { id: string; brand: string; last4: string; exp_month: number; exp_year: number } | null }>(
+    "/dashboard/billing/payment-method"
+  );
+}
+
+export function removePaymentMethod(): Promise<{ ok: boolean }> {
+  return apiRequest<{ ok: boolean }>("/dashboard/billing/payment-method", {
+    method: "DELETE",
+  });
+}

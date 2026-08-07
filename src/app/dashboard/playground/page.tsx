@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/nextjs";
 import type { PlaygroundConfig, PlaygroundResponse } from "@/types/api";
 import { nenasFlash } from "@/config/models";
-import { API_BASE_URL } from "@/lib/api-client";
+import { API_BASE_URL, getBilling } from "@/lib/api-client";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,11 @@ export default function PlaygroundPage() {
   const [response, setResponse] = useState<PlaygroundResponse | null>(null);
   const [running, setRunning] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [balance, setBalance] = useState<number>(0);
+
+  useEffect(() => {
+    getBilling().then((b) => setBalance(b.balance)).catch(() => {});
+  }, []);
 
   const updateConfig = (patch: Partial<PlaygroundConfig>) => {
     setConfig((prev) => ({ ...prev, ...patch }));
@@ -45,6 +50,10 @@ export default function PlaygroundPage() {
   const handleRun = async () => {
     if (!config.input.trim()) {
       toast.error("Enter a prompt before running a request");
+      return;
+    }
+    if (balance <= 0) {
+      toast.error("Insufficient credit. Please top up your wallet.");
       return;
     }
     setRunning(true);
@@ -153,6 +162,7 @@ export default function PlaygroundPage() {
               onChange={(input) => updateConfig({ input })}
               onRun={handleRun}
               running={running}
+              hasCredit={balance > 0}
             />
           </CardContent>
         </Card>

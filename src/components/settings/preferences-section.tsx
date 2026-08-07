@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { ReasoningEffort, SearchDepth, SearchMode } from "@/types/api";
 import { searchDepthOptions } from "@/config/models";
+import { getSettings, updateSettings } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,9 +32,37 @@ export function PreferencesSection() {
   const [searchMode, setSearchMode] = useState<SearchMode>("auto");
   const [depth, setDepth] = useState<SearchDepth>("balanced");
   const [maxResults, setMaxResults] = useState(10);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    toast.success("Developer preferences saved");
+  useEffect(() => {
+    getSettings().then((res) => {
+      const prefs = (res.settings?.metadata as Record<string, unknown>)?.preferences as Record<string, unknown> | undefined;
+      if (prefs) {
+        if (prefs.reasoning_effort) setReasoning(prefs.reasoning_effort as ReasoningEffort);
+        if (prefs.search_mode) setSearchMode(prefs.search_mode as SearchMode);
+        if (prefs.search_depth) setDepth(prefs.search_depth as SearchDepth);
+        if (prefs.max_results) setMaxResults(prefs.max_results as number);
+      }
+    }).catch(() => {});
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateSettings({
+        preferences: {
+          reasoning_effort: reasoning,
+          search_mode: searchMode,
+          search_depth: depth,
+          max_results: maxResults,
+        },
+      });
+      toast.success("Developer preferences saved");
+    } catch {
+      toast.error("Failed to save preferences");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -104,7 +133,9 @@ export function PreferencesSection() {
         </div>
       </div>
       <div>
-        <Button onClick={handleSave}>Save preferences</Button>
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? "Saving..." : "Save preferences"}
+        </Button>
       </div>
     </div>
   );

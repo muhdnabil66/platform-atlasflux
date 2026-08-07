@@ -1,31 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { getSettings, updateSettings } from "@/lib/api-client";
 
 const NOTIFICATIONS = [
   {
-    id: "low-balance",
+    id: "low_balance",
     title: "Low balance",
     description: "Notify me when my balance drops below RM5.",
     default: true,
   },
   {
-    id: "payment-successful",
+    id: "payment_successful",
     title: "Payment successful",
     description: "Confirm top-ups and successful payments.",
     default: true,
   },
   {
-    id: "api-key-created",
+    id: "api_key_created",
     title: "API key created",
     description: "Alert me whenever a new API key is created.",
     default: false,
   },
   {
-    id: "spend-limit",
+    id: "spend_limit",
     title: "Spend limit reached",
     description: "Notify me when monthly spend crosses the limit.",
     default: true,
@@ -37,12 +38,21 @@ export function NotificationsSection() {
     Object.fromEntries(NOTIFICATIONS.map((n) => [n.id, n.default])),
   );
 
-  const toggle = (id: string) => {
+  useEffect(() => {
+    getSettings().then((res) => {
+      const notifs = (res.settings?.metadata as Record<string, unknown>)?.notifications as Record<string, boolean> | undefined;
+      if (notifs) {
+        setEnabled((prev) => ({ ...prev, ...notifs }));
+      }
+    }).catch(() => {});
+  }, []);
+
+  const toggle = async (id: string) => {
     setEnabled((prev) => {
       const next = { ...prev, [id]: !prev[id] };
-      toast.success(
-        next[id] ? "Notification enabled" : "Notification disabled",
-      );
+      updateSettings({ notifications: { [id]: next[id] } })
+        .then(() => toast.success(next[id] ? "Notification enabled" : "Notification disabled"))
+        .catch(() => toast.error("Failed to update notification setting"));
       return next;
     });
   };
