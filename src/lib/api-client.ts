@@ -47,6 +47,9 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        window.location.assign(new URL("/sign-in", window.location.origin));
+      }
       throw new Error("Session expired. Please sign in again.");
     }
     const body = await res.json().catch(() => null);

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SignIn } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 import { ArrowLeft, Check, ShieldCheck, Wallet, Zap } from "lucide-react";
 import { Logo } from "@/components/logo";
 
 export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to your AtlasFlux developer account.",
+  title: "Sign up",
+  description: "Create your AtlasFlux developer account.",
 };
 
 const BENEFITS = [
@@ -27,7 +27,7 @@ const BENEFITS = [
   },
 ];
 
-export default function SignInPage() {
+export default function SignUpPage() {
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
       <div className="hidden flex-col justify-between border-r p-10 lg:flex">
@@ -71,8 +71,8 @@ export default function SignInPage() {
         </div>
 
         <div className="w-full max-w-sm">
-          <SignIn
-            signUpUrl="/sign-up"
+          <SignUp
+            signInUrl="/sign-in"
             fallbackRedirectUrl="/dashboard/overview"
           />
 

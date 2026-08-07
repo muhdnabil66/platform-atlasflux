@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  AlertTriangle,
   CircleDollarSign,
   Coins,
   KeyRound,
@@ -27,17 +28,41 @@ import { formatCompactNumber, formatNumber, formatRM } from "@/lib/format";
 export default function OverviewPage() {
   const router = useRouter();
   const [data, setData] = useState<OverviewData | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState<TimeRange>("7d");
 
   useEffect(() => {
     let active = true;
-    getOverviewData().then((result) => {
-      if (active) setData(result);
-    });
+    getOverviewData()
+      .then((result) => {
+        if (active) setData(result);
+      })
+      .catch((err: unknown) => {
+        if (active) {
+          setError(err instanceof Error ? err.message : "Failed to load overview");
+        }
+      });
     return () => {
       active = false;
     };
   }, []);
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+        <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+          <AlertTriangle className="size-5 text-muted-foreground" aria-hidden="true" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-medium">Could not load your dashboard</p>
+          <p className="text-sm text-muted-foreground">{error}</p>
+        </div>
+        <Button onClick={() => router.push("/sign-in")}>
+          Go to sign in
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
