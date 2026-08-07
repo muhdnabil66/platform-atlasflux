@@ -61,7 +61,10 @@ export function AddFundsDialog({ open, onOpenChange, onAdded, presetAmount }: Ad
     customInputRef.current?.focus();
   };
 
-  const handleCustomChange = (value: string) => {
+  const amountInRange = Number.isFinite(amount) && amount >= 10 && amount <= 500;
+  const canConfirm = amountInRange && !loading;
+
+const handleCustomChange = (value: string) => {
     setCustomValue(value);
     const parsed = Number(value);
     if (value.trim() !== "" && !Number.isNaN(parsed)) {
@@ -172,9 +175,10 @@ export function AddFundsDialog({ open, onOpenChange, onAdded, presetAmount }: Ad
                   id="custom-amount"
                   ref={customInputRef}
                   type="number"
-                  inputMode="numeric"
+                  inputMode="decimal"
                   min={10}
                   max={500}
+                  step={0.01}
                   placeholder="10 to 500"
                   className="h-9 pl-9"
                   value={customValue}
@@ -214,7 +218,7 @@ export function AddFundsDialog({ open, onOpenChange, onAdded, presetAmount }: Ad
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleConfirm} disabled={loading}>
+          <Button onClick={handleConfirm} disabled={!canConfirm}>
             {loading && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
             Confirm top-up
           </Button>
