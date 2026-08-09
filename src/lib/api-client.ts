@@ -141,7 +141,7 @@ interface BackendOverviewResponse {
   active_api_key_count: number;
 }
 
-function adaptOverview(res: BackendOverviewResponse): OverviewData {
+function adaptOverview(res: BackendOverviewResponse, logs: BackendLogEntry[] = []): OverviewData {
   const balanceRm = res.wallet
     ? Number(((res.wallet.availableMicroMyr ?? 0) / 1_000_000).toFixed(2))
     : 0;
@@ -174,14 +174,49 @@ function adaptOverview(res: BackendOverviewResponse): OverviewData {
       webSearches: res.total_usage.searchCount,
       contentPages: res.total_usage.contentPages,
     },
-    routing: [],
-    activity: [],
+    routing: buildRoutingBreakdown(logs),
+    activity: logs.slice(0, 20).map((entry) => ({
+      id: entry.requestId,
+      time: entry.createdAt,
+      requestId: entry.requestId,
+      endpoint: entry.endpoint,
+      status: entry.status as RequestStatus,
+      tokens: entry.inputTokens + entry.outputTokens + entry.reasoningTokens,
+      search: entry.searchCount,
+      cost: Number((entry.costMicroMyr / 1_000_000).toFixed(6)),
+      latencyMs: entry.latencyMs ?? 0,
+    })),
     series: { "24h": [], "7d": series, "30d": series, "90d": series },
   };
 }
 
-export function getOverviewData(): Promise<OverviewData> {
-  return apiRequest<BackendOverviewResponse>("/dashboard/overview").then(adaptOverview);
+function buildRoutingBreakdown(logs: BackendLogEntry[]): OverviewData["routing"] {
+  const totals = new Map<string, { requests: number; cost: number }>();
+  for (const entry of logs) {
+    const category = entry.routingCategory || "general";
+    const current = totals.get(category) ?? { requests: 0, cost: 0 };
+    current.requests += 1;
+    current.cost += entry.costMicroMyr;
+    totals.set(category, current);
+  }
+  const totalRequests = [...totals.values()].reduce((sum, value) => sum + value.requests, 0);
+  return [...totals.entries()]
+    .sort((a, b) => b[1].requests - a[1].requests)
+    .map(([id, value]) => ({
+      id,
+      name: id.charAt(0).toUpperCase() + id.slice(1),
+      share: totalRequests > 0 ? Number(((value.requests / totalRequests) * 100).toFixed(1)) : 0,
+      requests: value.requests,
+      cost: Number((value.cost / 1_000_000).toFixed(6)),
+    }));
+}
+
+export async function getOverviewData(): Promise<OverviewData> {
+  const [overviewResult, logsResult] = await Promise.all([
+    apiRequest<BackendOverviewResponse>("/dashboard/overview"),
+    apiRequest<{ logs: BackendLogEntry[] }>("/dashboard/logs?limit=20"),
+  ]);
+  return adaptOverview(overviewResult, logsResult.logs);
 }
 
 /* ------------------------------------------------------------------ */
@@ -194,8 +229,15 @@ export function getUsageData(filters: UsageFilters): Promise<UsageSummary> {
     to: new Date().toISOString(),
     granularity: filters.range === "24h" ? "hour" : "day",
   });
-  if (filters.apiKey) params.set("api_key_id", filters.apiKey);
-  return apiRequest<{
+  if (filters.apiKey && filters.apiKey !== "all") params.set("api_key_id", filters.apiKey);
+  const logParams = new URLSearchParams({
+    from: rangeToIso(filters.range),
+    to: new Date().toISOString(),
+    limit: "200",
+  });
+  if (filters.apiKey && filters.apiKey !== "all") logParams.set("api_key_id", filters.apiKey);
+  return Promise.all([
+    apiRequest<{
     from: string;
     to: string;
     granularity: string;
@@ -203,9 +245,9 @@ export function getUsageData(filters: UsageFilters): Promise<UsageSummary> {
     overview: { requests: number; inputTokens: number; outputTokens: number; reasoningTokens: number; searchCount: number; contentPages: number; costMicroMyr: number; latencySumMs: number; failedRequests: number };
     cost_breakdown: { inputCostMicroMyr: number; outputCostMicroMyr: number; reasoningCostMicroMyr: number; searchCostMicroMyr: number; contentCostMicroMyr: number };
     by_key: Array<{ key_id: string; key_name: string; prefix: string; requests: number; tokens: number; searches: number; spend_micro_myr: number }>;
-  }>(
-    `/dashboard/usage?${params.toString()}`
-  ).then((res) => {
+    }>(`/dashboard/usage?${params.toString()}`),
+    apiRequest<{ logs: BackendLogEntry[] }>(`/dashboard/logs?${logParams.toString()}`),
+  ]).then(([res, logsResponse]) => {
     const series = res.series.map((point) => ({
       time: point.bucket,
       timestamp: new Date(point.bucket).getTime(),
@@ -243,7 +285,13 @@ export function getUsageData(filters: UsageFilters): Promise<UsageSummary> {
         searches: key.searches,
         spend: Number((key.spend_micro_myr / 1_000_000).toFixed(6)),
       })),
-      byCategory: [],
+      byCategory: buildRoutingBreakdown(logsResponse.logs).map((category) => ({
+        id: category.id,
+        name: category.name,
+        requests: category.requests,
+        spend: category.cost,
+        share: category.share,
+      })),
     };
   });
 }
@@ -276,14 +324,14 @@ interface BackendApiKey {
   created_at: string;
 }
 
-function adaptApiKey(k: BackendApiKey): ApiKey {
+function adaptApiKey(k: BackendApiKey, usage = 0): ApiKey {
   return {
     id: k.id,
     name: k.name,
     prefix: k.prefix,
     created: k.created_at,
     lastUsed: k.last_used_at,
-    usage: 0,
+    usage,
     status: k.status as ApiKey["status"],
     environment: k.environment as ApiKey["environment"],
     monthlySpendLimit: k.monthly_spend_limit_micro_myr != null
@@ -299,10 +347,15 @@ interface BackendCreateKeyResponse {
   warning: string;
 }
 
-export function listApiKeys(): Promise<ApiKey[]> {
-  return apiRequest<{ keys: BackendApiKey[] }>("/dashboard/api-keys").then((res) =>
-    res.keys.map(adaptApiKey)
-  );
+export async function listApiKeys(): Promise<ApiKey[]> {
+  const [keysResult, usageResult] = await Promise.all([
+    apiRequest<{ keys: BackendApiKey[] }>("/dashboard/api-keys"),
+    apiRequest<{ by_key: Array<{ key_id: string; requests: number }> }>(
+      `/dashboard/usage?from=${encodeURIComponent(rangeToIso("90d"))}&to=${encodeURIComponent(new Date().toISOString())}&granularity=day`
+    ),
+  ]);
+  const usageByKey = new Map(usageResult.by_key.map((key) => [key.key_id, key.requests]));
+  return keysResult.keys.map((key) => adaptApiKey(key, usageByKey.get(key.id) ?? 0));
 }
 
 export function createApiKey(input: CreateApiKeyInput): Promise<CreatedApiKey> {
@@ -546,6 +599,7 @@ export function getSettings(): Promise<{ settings: Record<string, unknown> | nul
 export function revokeAllApiKeys(): Promise<{ revoked: number }> {
   return apiRequest<{ revoked: number }>("/dashboard/api-keys/revoke-all", {
     method: "POST",
+    body: "{}",
   });
 }
 
