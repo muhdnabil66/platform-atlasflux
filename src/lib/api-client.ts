@@ -389,10 +389,10 @@ interface BackendBillingResponse {
     lifetimeTopupMicroMyr: number;
     lifetimeSpendMicroMyr: number;
   } | null;
-  balance_myr: number;
-  reserved_myr: number;
-  lifetime_topup_myr: number;
-  lifetime_spend_myr: number;
+  balance_myr: string;
+  reserved_myr: string;
+  lifetime_topup_myr: string;
+  lifetime_spend_myr: string;
   usage_30d: {
     requests: number;
     inputTokens: number;
@@ -409,7 +409,7 @@ interface BackendBillingResponse {
 }
 
 function adaptBilling(res: BackendBillingResponse): BillingSummary {
-  const balance = res.balance_myr ?? 0;
+  const balance = Number(res.balance_myr ?? 0);
   const requestCount = res.usage_30d?.requests ?? 0;
   const spend30d = Number(((res.usage_30d?.costMicroMyr ?? 0) / 1_000_000).toFixed(6));
   const avgCostPerRequest = requestCount > 0 ? spend30d / requestCount : 0;
