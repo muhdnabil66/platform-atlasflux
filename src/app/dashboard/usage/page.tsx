@@ -44,7 +44,7 @@ import {
   formatDuration,
   formatNumber,
   formatPercent,
-  formatRM,
+  formatRMExact,
 } from "@/lib/format";
 
 const DEFAULT_FILTERS: UsageFilters = {
@@ -70,6 +70,7 @@ export default function UsagePage() {
 
   const [data, setData] = useState<UsageSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshVersion, setRefreshVersion] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,7 +78,7 @@ export default function UsagePage() {
       if (!cancelled) { setData(res); setLoading(false); }
     }).catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [filters]);
+  }, [filters, refreshVersion]);
 
   const derived = useMemo(() => {
     if (!data) return null;
@@ -121,9 +122,16 @@ export default function UsagePage() {
               <Download className="size-4" aria-hidden="true" />
               Export CSV
             </Button>
-            <Button variant="ghost" onClick={() => { setLoading(true); setFilters(DEFAULT_FILTERS); toast.info("Filters reset"); }}>
-              <RefreshCw className="size-4" aria-hidden="true" />
-              Reset
+            <Button
+              variant="outline"
+              disabled={loading}
+              onClick={() => {
+                setLoading(true);
+                setRefreshVersion((version) => version + 1);
+              }}
+            >
+              <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
+              Refresh
             </Button>
           </>
         }
@@ -227,7 +235,7 @@ export default function UsagePage() {
               title="Spend"
               data={derived}
               metric="spend"
-              formatter={(v) => formatRM(v)}
+              formatter={(v) => formatRMExact(v)}
               color={CHART_COLORS[0]}
             />
             <MetricChart
@@ -279,11 +287,11 @@ export default function UsagePage() {
               <Skeleton className="h-44 w-full" />
             ) : (
               <ul className="flex flex-col divide-y">
-                <CostRow label="Input tokens" hint="RM5 / 1M" value={formatRM(data.costBreakdown.inputTokenCost)} />
-                <CostRow label="Output tokens" hint="RM25 / 1M" value={formatRM(data.costBreakdown.outputTokenCost)} />
-                <CostRow label="Reasoning" hint="Output rate" value={formatRM(data.costBreakdown.reasoningCost)} />
-                <CostRow label="Search" hint="Per search" value={formatRM(data.costBreakdown.searchCost)} />
-                <CostRow label="Content" hint="Per page" value={formatRM(data.costBreakdown.contentCost)} />
+                <CostRow label="Input tokens" hint="RM5 / 1M" value={formatRMExact(data.costBreakdown.inputTokenCost)} />
+                <CostRow label="Output tokens" hint="RM25 / 1M" value={formatRMExact(data.costBreakdown.outputTokenCost)} />
+                <CostRow label="Reasoning" hint="Output rate" value={formatRMExact(data.costBreakdown.reasoningCost)} />
+                <CostRow label="Search" hint="Per search" value={formatRMExact(data.costBreakdown.searchCost)} />
+                <CostRow label="Content" hint="Per page" value={formatRMExact(data.costBreakdown.contentCost)} />
               </ul>
             )}
           </CardContent>
@@ -324,7 +332,7 @@ export default function UsagePage() {
                           {formatNumber(key.searches)}
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
-                          {formatRM(key.spend)}
+                          {formatRMExact(key.spend)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -349,7 +357,7 @@ export default function UsagePage() {
                     <div className="mb-1 flex items-center justify-between text-sm">
                       <span className="font-medium">{cat.name}</span>
                       <span className="tabular-nums text-muted-foreground">
-                        {formatRM(cat.spend)} · {cat.share}%
+                        {formatRMExact(cat.spend)} · {cat.share}%
                       </span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-muted" role="presentation">

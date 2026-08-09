@@ -147,12 +147,12 @@ function adaptOverview(res: BackendOverviewResponse, logs: BackendLogEntry[] = [
   const balanceRm = res.wallet
     ? Number(((res.wallet.availableMicroMyr ?? 0) / 1_000_000).toFixed(2))
     : 0;
-  const todaySpendRm = Number(((res.today_usage.costMicroMyr ?? 0) / 1_000_000).toFixed(2));
+  const todaySpendRm = Number(((res.today_usage.costMicroMyr ?? 0) / 1_000_000).toFixed(6));
 
   const series = res.daily_series.map((p) => ({
     time: p.bucket,
     timestamp: new Date(p.bucket).getTime(),
-    spend: Number((p.costMicroMyr / 1_000_000).toFixed(2)),
+    spend: Number((p.costMicroMyr / 1_000_000).toFixed(6)),
     requests: p.requests,
     tokens: p.inputTokens + p.outputTokens + p.reasoningTokens,
   }));
@@ -459,7 +459,7 @@ interface BackendLedgerEntry {
 }
 
 function adaptTransaction(t: BackendLedgerEntry): Transaction {
-  const amountRm = Number((t.amountMicroMyr / 1_000_000).toFixed(2));
+  const amountRm = Number((t.amountMicroMyr / 1_000_000).toFixed(6));
   let type: Transaction["type"] = "api_usage";
   if (t.type === "topup") type = "top_up";
   else if (t.type === "usage_refund") type = "refund";
@@ -529,12 +529,13 @@ function adaptLog(entry: BackendLogEntry): RequestLog {
     reasoningTokens: entry.reasoningTokens,
     cachedTokens: entry.cachedTokens ?? 0,
     searchCount: entry.searchCount,
-    cost: Number((entry.costMicroMyr / 1_000_000).toFixed(4)),
+    cost: Number((entry.costMicroMyr / 1_000_000).toFixed(6)),
     latencyMs: entry.latencyMs ?? 0,
     routingCategory: entry.routingCategory ?? "general",
     reasoningEffort: entry.reasoningEffort ?? null,
     searchDepth: entry.searchDepth ?? null,
     error: entry.errorCode ?? null,
+    usageSource: entry.usageSource ?? "estimated",
   };
 }
 

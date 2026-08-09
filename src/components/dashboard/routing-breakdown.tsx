@@ -1,5 +1,5 @@
 import type { RoutingCategory } from "@/types/api";
-import { formatCompactNumber, formatRM } from "@/lib/format";
+import { formatCompactNumber, formatRMAdaptive } from "@/lib/format";
 import {
   Tooltip,
   TooltipContent,
@@ -39,7 +39,7 @@ export function RoutingBreakdown({ categories }: RoutingBreakdownProps) {
             <div className="mb-1 flex items-center justify-between gap-2 text-sm">
               <span className="font-medium">{cat.name}</span>
               <span className="tabular-nums text-muted-foreground">
-                {cat.share}% · {formatRM(cat.cost)}
+                {cat.share}% · {formatRMAdaptive(cat.cost)}
               </span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted" role="presentation">

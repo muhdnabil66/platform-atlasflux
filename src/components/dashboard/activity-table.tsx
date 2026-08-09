@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { CopyButton } from "@/components/shared/copy-button";
-import { formatDuration, formatNumber, formatRM, formatTime } from "@/lib/format";
+import { formatDuration, formatNumber, formatRMExact, formatTime } from "@/lib/format";
 
 interface ActivityTableProps {
   items: ActivityItem[];
@@ -53,7 +53,7 @@ export function ActivityTable({ items }: ActivityTableProps) {
               </TableCell>
               <TableCell className="text-right tabular-nums">{formatNumber(item.tokens)}</TableCell>
               <TableCell className="text-right tabular-nums">{item.search}</TableCell>
-              <TableCell className="text-right tabular-nums">{formatRM(item.cost)}</TableCell>
+              <TableCell className="min-w-36 text-right font-mono tabular-nums">{formatRMExact(item.cost)}</TableCell>
               <TableCell className="text-right tabular-nums text-muted-foreground">
                 {formatDuration(item.latencyMs)}
               </TableCell>

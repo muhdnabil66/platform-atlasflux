@@ -10,7 +10,9 @@ import {
   Layers,
   Loader2,
   MousePointerClick,
+  RefreshCw,
 } from "lucide-react";
+import { toast } from "sonner";
 import type { TimeRange } from "@/types/api";
 import { getOverviewData, type OverviewData } from "@/lib/api-client";
 import { PageHeader } from "@/components/shared/page-header";
@@ -23,29 +25,41 @@ import { RoutingBreakdown } from "@/components/dashboard/routing-breakdown";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCompactNumber, formatNumber, formatRM } from "@/lib/format";
+import { formatCompactNumber, formatNumber, formatRM, formatRMAdaptive } from "@/lib/format";
 
 export default function OverviewPage() {
   const router = useRouter();
   const [data, setData] = useState<OverviewData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState<TimeRange>("7d");
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshVersion, setRefreshVersion] = useState(0);
 
   useEffect(() => {
     let active = true;
     getOverviewData()
       .then((result) => {
-        if (active) setData(result);
+        if (active) {
+          setData(result);
+          setError(null);
+        }
       })
       .catch((err: unknown) => {
         if (active) {
-          setError(err instanceof Error ? err.message : "Failed to load overview");
+          if (refreshVersion === 0) {
+            setError(err instanceof Error ? err.message : "Failed to load overview");
+          } else {
+            toast.error("Could not refresh overview");
+          }
         }
+      })
+      .finally(() => {
+        if (active) setRefreshing(false);
       });
     return () => {
       active = false;
     };
-  }, []);
+  }, [refreshVersion]);
 
   if (error) {
     return (
@@ -71,6 +85,17 @@ export default function OverviewPage() {
         description="Monitor your API usage, balance and platform activity."
         actions={
           <>
+            <Button
+              variant="outline"
+              disabled={refreshing}
+              onClick={() => {
+                setRefreshing(true);
+                setRefreshVersion((version) => version + 1);
+              }}
+            >
+              <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
+              Refresh
+            </Button>
             <Button variant="outline" onClick={() => router.push("/dashboard/billing")}>
               <Coins className="size-4" aria-hidden="true" />
               Add funds
@@ -91,15 +116,15 @@ export default function OverviewPage() {
             value={formatRM(data.summary.balance)}
             icon={CircleDollarSign}
             hint="Remaining prepaid balance in MYR"
-            footer={`Spend today: ${formatRM(data.summary.spendToday)}`}
+            footer={`Spend today: ${formatRMAdaptive(data.summary.spendToday)}`}
           />
           <StatCard
             label="Spend today"
-            value={formatRM(data.summary.spendToday)}
+            value={formatRMAdaptive(data.summary.spendToday)}
             delta={data.summary.spendDeltaPercent}
             tone="negative"
             icon={Coins}
-            hint={`Projected daily spend: ${formatRM(data.summary.projectedDailySpend)}`}
+            hint={`Projected daily spend: ${formatRMAdaptive(data.summary.projectedDailySpend)}`}
           />
           <StatCard
             label="Requests today"

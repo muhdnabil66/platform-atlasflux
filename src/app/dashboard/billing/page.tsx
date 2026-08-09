@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Coins, Gauge, TrendingUp, Wallet } from "lucide-react";
+import { Coins, Gauge, RefreshCw, TrendingUp, Wallet } from "lucide-react";
+import { toast } from "sonner";
 import type { BillingSummary, Transaction } from "@/types/api";
 import { getBilling, getTransactions } from "@/lib/api-client";
 import { PageHeader } from "@/components/shared/page-header";
@@ -15,7 +16,7 @@ import { AutoReloadCard } from "@/components/billing/auto-reload-card";
 import { PaymentCardSection } from "@/components/billing/payment-card-section";
 import { TransactionTable } from "@/components/billing/transaction-table";
 import { topUpOptions, popularTopUp } from "@/config/billing";
-import { formatCompactNumber, formatRM } from "@/lib/format";
+import { formatCompactNumber, formatRM, formatRMAdaptive } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export default function BillingPage() {
@@ -24,11 +25,29 @@ export default function BillingPage() {
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [txLoading, setTxLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshVersion, setRefreshVersion] = useState(0);
 
   useEffect(() => {
-    getBilling().then(setBilling).catch(() => {});
-    getTransactions().then(setTransactions).finally(() => setTxLoading(false)).catch(() => {});
-  }, []);
+    let active = true;
+    Promise.all([getBilling(), getTransactions()])
+      .then(([nextBilling, nextTransactions]) => {
+        if (!active) return;
+        setBilling(nextBilling);
+        setTransactions(nextTransactions);
+      })
+      .catch(() => {
+        if (active) toast.error("Could not refresh billing data");
+      })
+      .finally(() => {
+        if (!active) return;
+        setTxLoading(false);
+        setRefreshing(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [refreshVersion]);
 
   const openDialog = (amount?: number) => {
     setPreset(amount);
@@ -41,10 +60,23 @@ export default function BillingPage() {
         title="Billing"
         description="Prepaid API balance in MYR. Add funds when you need them, with no plans or monthly commitment."
         actions={
-          <Button onClick={() => openDialog()}>
-            <Coins className="size-4" aria-hidden="true" />
-            Add funds
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              disabled={refreshing || txLoading}
+              onClick={() => {
+                setRefreshing(true);
+                setRefreshVersion((version) => version + 1);
+              }}
+            >
+              <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
+              Refresh
+            </Button>
+            <Button onClick={() => openDialog()}>
+              <Coins className="size-4" aria-hidden="true" />
+              Add funds
+            </Button>
+          </>
         }
       />
 
@@ -56,7 +88,7 @@ export default function BillingPage() {
               value={formatRM(billing.balance)}
               icon={Wallet}
               hint="Remaining prepaid balance in MYR"
-              footer={`Spend last 30 days: ${formatRM(billing.spend30d)}`}
+              footer={`Spend last 30 days: ${formatRMAdaptive(billing.spend30d)}`}
             />
             <StatCard
               label="Estimated remaining requests"

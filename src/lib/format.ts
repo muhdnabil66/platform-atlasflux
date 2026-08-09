@@ -7,6 +7,19 @@ export function formatRM(value: number): string {
   }).format(value);
 }
 
+/** Use for per-request costs, which are settled to micro-MYR precision. */
+export function formatRMExact(value: number): string {
+  const amount = Math.abs(value).toFixed(6);
+  return value < 0 ? `-RM${amount}` : `RM${amount}`;
+}
+
+/** Keep normal MYR amounts compact while preserving non-zero sub-sen values. */
+export function formatRMAdaptive(value: number): string {
+  return value !== 0 && Math.abs(value) < 0.01
+    ? formatRMExact(value)
+    : formatRM(value);
+}
+
 export function formatRMCompact(value: number): string {
   if (Math.abs(value) >= 1000) {
     return `RM${formatCompactNumber(value, { decimals: 2 })}`;

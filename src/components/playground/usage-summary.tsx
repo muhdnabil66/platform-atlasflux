@@ -1,5 +1,5 @@
 import type { PlaygroundUsage } from "@/types/api";
-import { formatCompactNumber, formatDuration, formatRM } from "@/lib/format";
+import { formatCompactNumber, formatDuration, formatRMExact } from "@/lib/format";
 
 interface UsageSummaryPanelProps {
   usage: PlaygroundUsage;
@@ -11,7 +11,7 @@ export function UsageSummaryPanel({ usage }: UsageSummaryPanelProps) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h4 className="text-sm font-semibold">Usage</h4>
         <span className="font-mono text-sm font-semibold tabular-nums text-primary">
-          Total cost: {formatRM(usage.totalCost)}
+          Total cost: {formatRMExact(usage.totalCost)}
         </span>
       </div>
 
@@ -30,7 +30,7 @@ export function UsageSummaryPanel({ usage }: UsageSummaryPanelProps) {
         <UsageRow label="Content pages" value={String(usage.contentPages)} />
         <UsageRow
           label="Cost breakdown"
-          value={`${formatRM(usage.costs.inputTokenCost)} input · ${formatRM(usage.costs.outputTokenCost)} output · ${formatRM(usage.costs.reasoningCost)} reasoning · ${formatRM(usage.costs.searchCost)} search`}
+          value={`${formatRMExact(usage.costs.inputTokenCost)} input · ${formatRMExact(usage.costs.outputTokenCost)} output · ${formatRMExact(usage.costs.reasoningCost)} reasoning · ${formatRMExact(usage.costs.searchCost)} search`}
         />
       </dl>
     </div>

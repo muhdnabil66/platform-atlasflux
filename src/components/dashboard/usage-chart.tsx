@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import type { SeriesPoint, TimeRange } from "@/types/api";
 import { cn } from "@/lib/utils";
-import { formatCompactNumber, formatRMCompact } from "@/lib/format";
+import { formatCompactNumber, formatRMAdaptive } from "@/lib/format";
 
 type Metric = "spend" | "requests";
 
@@ -44,7 +44,7 @@ function ChartTooltip({
     <div className="rounded-lg border bg-popover px-3 py-2 text-sm shadow-md">
       <p className="font-medium text-foreground">{label}</p>
       <p className="tabular-nums text-muted-foreground">
-        {metric === "spend" ? formatRMCompact(value) : formatCompactNumber(value)}
+        {metric === "spend" ? formatRMAdaptive(value) : formatCompactNumber(value)}
       </p>
     </div>
   );

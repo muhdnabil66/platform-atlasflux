@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { formatDate, formatRM } from "@/lib/format";
+import { formatDate, formatRMAdaptive } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface TransactionTableProps {
@@ -46,7 +46,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                 )}
               >
                 {txn.amount > 0 ? "+" : ""}
-                {formatRM(txn.amount)}
+                {formatRMAdaptive(txn.amount)}
               </TableCell>
               <TableCell>
                 <StatusBadge status={txn.status} />

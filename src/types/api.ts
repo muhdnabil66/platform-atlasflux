@@ -220,6 +220,7 @@ export interface RequestLog {
   // Keep them nullable so the dashboard never presents invented values.
   reasoningEffort: ReasoningEffort | null;
   searchDepth: SearchDepth | "off" | null;
+  usageSource: "provider" | "estimated";
   error?: string | null;
   costs?: CostBreakdown;
 }

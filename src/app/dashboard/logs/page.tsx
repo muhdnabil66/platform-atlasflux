@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Search, ScrollText } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw, Search, ScrollText } from "lucide-react";
+import { toast } from "sonner";
 import type { RequestLog, RequestStatus } from "@/types/api";
 import { getRequestLogs } from "@/lib/api-client";
 import { PageHeader } from "@/components/shared/page-header";
@@ -29,6 +30,7 @@ export default function LogsPage() {
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshVersion, setRefreshVersion] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -37,18 +39,22 @@ export default function LogsPage() {
 
   useEffect(() => {
     let active = true;
-    getRequestLogs({ search: debouncedSearch, status, limit: PAGE_SIZE, offset }).then(
-      (result) => {
+    getRequestLogs({ search: debouncedSearch, status, limit: PAGE_SIZE, offset })
+      .then((result) => {
         if (!active) return;
         setLogs(result.logs);
         setTotal(result.total);
-        setLoading(false);
-      }
-    );
+      })
+      .catch(() => {
+        if (active) toast.error("Could not refresh request logs");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
-  }, [debouncedSearch, status, offset]);
+  }, [debouncedSearch, status, offset, refreshVersion]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
@@ -58,6 +64,16 @@ export default function LogsPage() {
       <PageHeader
         title="Logs"
         description="Inspect individual requests: tokens, search, cost, latency and status."
+        actions={
+          <Button
+            variant="outline"
+            disabled={loading}
+            onClick={() => setRefreshVersion((version) => version + 1)}
+          >
+            <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
+            Refresh
+          </Button>
+        }
       />
 
       <Card>
@@ -77,7 +93,8 @@ export default function LogsPage() {
           </div>
           <Select
             value={status}
-            onValueChange={(v) => {
+              onValueChange={(v) => {
+              setLoading(true);
               setStatus(v as "all" | RequestStatus);
               setOffset(0);
             }}
@@ -130,7 +147,10 @@ export default function LogsPage() {
                   variant="outline"
                   size="sm"
                   disabled={currentPage <= 1}
-                  onClick={() => setOffset((o) => Math.max(0, o - PAGE_SIZE))}
+                  onClick={() => {
+                    setLoading(true);
+                    setOffset((o) => Math.max(0, o - PAGE_SIZE));
+                  }}
                 >
                   <ChevronLeft className="size-4" aria-hidden="true" />
                   Previous
@@ -142,7 +162,10 @@ export default function LogsPage() {
                   variant="outline"
                   size="sm"
                   disabled={currentPage >= totalPages}
-                  onClick={() => setOffset((o) => o + PAGE_SIZE)}
+                  onClick={() => {
+                    setLoading(true);
+                    setOffset((o) => o + PAGE_SIZE);
+                  }}
                 >
                   Next
                   <ChevronRight className="size-4" aria-hidden="true" />

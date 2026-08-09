@@ -18,7 +18,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { CopyButton } from "@/components/shared/copy-button";
 import { Separator } from "@/components/ui/separator";
 import { AppIcon } from "./app-icon";
-import { formatDateTime, formatDuration, formatNumber, formatRM, truncateId } from "@/lib/format";
+import { formatDateTime, formatDuration, formatNumber, formatRMExact, truncateId } from "@/lib/format";
 
 interface LogDetailDrawerProps {
   log: RequestLog | null;
@@ -80,17 +80,17 @@ export function LogDetailDrawer({ log, onOpenChange }: LogDetailDrawerProps) {
                 <div className="mt-1 flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2.5 text-sm">
                   <span className="text-muted-foreground">Total cost</span>
                   <span className="inline-flex items-center gap-1.5 font-mono text-base font-semibold tabular-nums">
-                    {formatRM(log.cost)}
-                    {log.cachedTokens > 0 && (
+                    {formatRMExact(log.cost)}
+                    {log.usageSource === "provider" && log.cachedTokens > 0 && (
                       <Tooltip delayDuration={150}>
                         <TooltipTrigger
                           className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          aria-label={`Provider cached ${formatNumber(log.cachedTokens)} prompt tokens`}
+                          aria-label={`Model provider reported ${formatNumber(log.cachedTokens)} cached input tokens`}
                         >
                           <Coins className="size-3.5" aria-hidden="true" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          Provider cached {formatNumber(log.cachedTokens)} prompt tokens
+                          Model provider reported {formatNumber(log.cachedTokens)} cached input tokens
                         </TooltipContent>
                       </Tooltip>
                     )}
@@ -115,11 +115,11 @@ export function LogDetailDrawer({ log, onOpenChange }: LogDetailDrawerProps) {
                   <section className="flex flex-col gap-2.5">
                     <h3 className="text-sm font-semibold">Cost breakdown</h3>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-                      <Detail label="Input" value={formatRM(log.costs.inputTokenCost)} />
-                      <Detail label="Output" value={formatRM(log.costs.outputTokenCost)} />
-                      <Detail label="Reasoning" value={formatRM(log.costs.reasoningCost)} />
-                      <Detail label="Search" value={formatRM(log.costs.searchCost)} />
-                      <Detail label="Content" value={formatRM(log.costs.contentCost)} />
+                      <Detail label="Input" value={formatRMExact(log.costs.inputTokenCost)} />
+                      <Detail label="Output" value={formatRMExact(log.costs.outputTokenCost)} />
+                      <Detail label="Reasoning" value={formatRMExact(log.costs.reasoningCost)} />
+                      <Detail label="Search" value={formatRMExact(log.costs.searchCost)} />
+                      <Detail label="Content" value={formatRMExact(log.costs.contentCost)} />
                     </div>
                   </section>
                 </>

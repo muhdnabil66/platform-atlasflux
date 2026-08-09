@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/tooltip";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { AppIcon } from "./app-icon";
-import { formatDateTime, formatDuration, formatNumber, formatRM, truncateId } from "@/lib/format";
+import { formatDateTime, formatDuration, formatNumber, formatRMExact, truncateId } from "@/lib/format";
 import { LogDetailDrawer } from "./log-detail-drawer";
 
 interface LogsTableProps {
@@ -47,7 +47,7 @@ export function LogsTable({ logs }: LogsTableProps) {
               <TableHead className="text-right">Output</TableHead>
               <TableHead className="text-right">Reasoning</TableHead>
               <TableHead className="text-right">Search</TableHead>
-              <TableHead className="text-right">Cost</TableHead>
+              <TableHead className="min-w-36 text-right">Cost</TableHead>
               <TableHead className="text-right">Latency</TableHead>
             </TableRow>
           </TableHeader>
@@ -134,25 +134,23 @@ function LogsRow({
         <TableCell className="whitespace-nowrap text-right tabular-nums">{formatNumber(log.outputTokens)}</TableCell>
         <TableCell className="whitespace-nowrap text-right tabular-nums">{formatNumber(log.reasoningTokens)}</TableCell>
         <TableCell className="whitespace-nowrap text-right tabular-nums">{log.searchCount}</TableCell>
-        <TableCell className="whitespace-nowrap text-right">
-          <span className="inline-flex items-center gap-1.5">
-            {log.cachedTokens > 0 ? (
+        <TableCell className="min-w-36 whitespace-nowrap text-right">
+          <span className="inline-flex w-full items-center justify-end gap-1.5">
+            {log.usageSource === "provider" && log.cachedTokens > 0 ? (
               <Tooltip delayDuration={150}>
                 <TooltipTrigger
                   onClick={(e) => e.stopPropagation()}
                   className="flex size-3.5 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-label={`Provider cached ${formatNumber(log.cachedTokens)} prompt tokens`}
+                  aria-label={`Model provider reported ${formatNumber(log.cachedTokens)} cached input tokens`}
                 >
                   <Coins className="size-3.5" aria-hidden="true" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  Provider cached {formatNumber(log.cachedTokens)} prompt tokens
+                  Model provider reported {formatNumber(log.cachedTokens)} cached input tokens
                 </TooltipContent>
               </Tooltip>
-            ) : (
-              <span className="size-3.5 shrink-0" aria-hidden="true" />
-            )}
-            <span className="font-mono tabular-nums">{formatRM(log.cost)}</span>
+            ) : null}
+            <span className="font-mono tabular-nums">{formatRMExact(log.cost)}</span>
           </span>
         </TableCell>
         <TableCell className="whitespace-nowrap text-right tabular-nums text-muted-foreground">
