@@ -7,9 +7,19 @@ export function formatRM(value: number): string {
   }).format(value);
 }
 
-/** Use for per-request costs, which are settled to micro-MYR precision. */
+/**
+ * Format per-request costs without changing their RM scale.
+ *
+ * Normal currency values keep two decimals (RM0.04, RM0.20, RM2.40).
+ * Sub-cent costs keep up to six decimals and remove insignificant trailing
+ * zeroes (RM0.0003, RM0.00462, RM0.000431).
+ */
 export function formatRMExact(value: number): string {
-  const amount = Math.abs(value).toFixed(6);
+  const absolute = Math.abs(value);
+  if (absolute === 0) return "RM0.00";
+  const amount = absolute >= 0.01
+    ? absolute.toFixed(2)
+    : absolute.toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
   return value < 0 ? `-RM${amount}` : `RM${amount}`;
 }
 
