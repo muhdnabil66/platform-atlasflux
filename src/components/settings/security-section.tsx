@@ -7,11 +7,12 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
 import { revokeAllApiKeys, deleteAccount } from "@/lib/api-client";
-
-const SESSIONS: { device: string; location: string; current: boolean }[] = [];
+import { useSession, useSessionList } from "@clerk/nextjs";
 
 export function SecuritySection() {
   const { signOut } = useAuth();
+  const { session: currentSession } = useSession();
+  const { sessions, isLoaded: sessionsLoaded } = useSessionList();
   const router = useRouter();
   const [open, setOpen] = useState<"keys" | "sessions" | "account" | null>(null);
   const [loading, setLoading] = useState<"keys" | "sessions" | "account" | null>(null);
@@ -29,9 +30,23 @@ export function SecuritySection() {
     }
   };
 
-  const handleSessions = () => {
+  const otherSessions = sessions?.filter((session) => session.id !== currentSession?.id) ?? [];
+
+  const handleSessions = async () => {
     setOpen(null);
-    toast.success("Other sessions signed out");
+    if (otherSessions.length === 0) {
+      toast.info("No other active sessions found");
+      return;
+    }
+    setLoading("sessions");
+    try {
+      await Promise.all(otherSessions.map((session) => session.end()));
+      toast.success("Other sessions signed out");
+    } catch {
+      toast.error("Failed to sign out other sessions");
+    } finally {
+      setLoading(null);
+    }
   };
 
   const handleDelete = async () => {
@@ -40,7 +55,7 @@ export function SecuritySection() {
     try {
       await deleteAccount();
       await signOut();
-      toast.success("Developer account deleted");
+      toast.success("Developer account closed");
       router.push("/");
     } catch {
       toast.error("Failed to delete account");
@@ -54,36 +69,39 @@ export function SecuritySection() {
       <div>
         <h3 className="text-sm font-semibold">Active sessions</h3>
         <ul className="mt-3 flex flex-col gap-2">
-          {SESSIONS.map((session) => (
+          {(sessionsLoaded ? sessions ?? [] : []).map((session) => (
             <li
-              key={session.device}
+              key={session.id}
               className="flex items-center justify-between gap-4 rounded-lg border bg-background p-3 text-sm"
             >
               <div>
                 <p className="font-medium">
-                  {session.device}
-                  {session.current && (
+                  Session {session.id.slice(-8)}
+                  {session.id === currentSession?.id && (
                     <span className="ml-2 rounded-full bg-accent/50 px-2 py-0.5 text-[11px] font-medium text-accent-foreground">
                       Current session
                     </span>
                   )}
                 </p>
-                <p className="text-xs text-muted-foreground">{session.location}</p>
+                <p className="text-xs text-muted-foreground">
+                  Last active {session.lastActiveAt.toLocaleString()}
+                </p>
               </div>
-              {!session.current && (
+              {session.id !== currentSession?.id && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    toast.success("Session signed out");
-                  }}
+                  onClick={() => void session.end().then(() => toast.success("Session signed out")).catch(() => toast.error("Failed to sign out session"))}
                 >
                   Sign out
                 </Button>
               )}
             </li>
           ))}
-        </ul>
+          </ul>
+        {sessionsLoaded && (sessions?.length ?? 0) === 0 && (
+          <p className="mt-3 text-sm text-muted-foreground">No active sessions found.</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -119,7 +137,7 @@ export function SecuritySection() {
           <div>
             <p className="text-sm font-medium">Sign out other sessions</p>
             <p className="text-xs text-muted-foreground">
-              Signs out every active session except this one.
+              Signs out every active Clerk session except this one.
             </p>
           </div>
           <Button
@@ -127,6 +145,7 @@ export function SecuritySection() {
             size="sm"
             onClick={() => setOpen("sessions")}
             className="text-destructive"
+            disabled={loading === "sessions" || !sessionsLoaded || otherSessions.length === 0}
           >
             Sign out others
           </Button>
@@ -143,9 +162,9 @@ export function SecuritySection() {
 
         <div className="flex flex-col gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-medium">Delete developer account</p>
+            <p className="text-sm font-medium">Close developer account</p>
             <p className="text-xs text-muted-foreground">
-              Permanently deletes your account, API keys, logs and balance.
+              Closes access and revokes API keys while retaining financial records for audit.
             </p>
           </div>
           <Button
@@ -154,14 +173,14 @@ export function SecuritySection() {
             onClick={() => setOpen("account")}
             disabled={loading === "account"}
           >
-            {loading === "account" ? "Deleting..." : "Delete account"}
+            {loading === "account" ? "Closing..." : "Close account"}
           </Button>
           <ConfirmDialog
             open={open === "account"}
             onOpenChange={(isOpen) => setOpen(isOpen ? "account" : null)}
-            title="Delete your account?"
-            description="This action is permanent. Your account, API keys, request logs and any remaining balance will be deleted and cannot be recovered."
-            confirmLabel="Delete account"
+            title="Close your account?"
+            description="This will revoke all API keys and close dashboard access. Financial records are retained for audit."
+            confirmLabel="Close account"
             variant="destructive"
             onConfirm={handleDelete}
           />

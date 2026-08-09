@@ -3,7 +3,9 @@ export type RequestStatus =
   | "failed"
   | "rate_limited"
   | "pending"
-  | "cancelled";
+  | "cancelled"
+  | "succeeded"
+  | "billed";
 
 export type Environment = "live" | "test";
 

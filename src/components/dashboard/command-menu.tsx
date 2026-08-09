@@ -67,7 +67,11 @@ export function CommandMenu() {
               <button
                 key={item.title}
                 onClick={() => {
-                  router.push(item.href);
+                  if (item.href.startsWith("http") || item.href.startsWith("mailto:")) {
+                    window.open(item.href, "_blank", "noopener,noreferrer");
+                  } else {
+                    router.push(item.href);
+                  }
                   setOpen(false);
                   setQuery("");
                 }}

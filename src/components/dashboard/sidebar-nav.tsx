@@ -35,7 +35,7 @@ export function SidebarNav({ collapsed = false, onNavigate }: SidebarNavProps) {
           )}
           {section.items.map((item) => {
             const active = isActive(item.href);
-            const external = item.href.startsWith("http");
+            const external = item.href.startsWith("http") || item.href.startsWith("mailto:");
             const inner = (
               <Link
                 href={item.href}

@@ -73,7 +73,6 @@ export default function UsagePage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     getUsageData(filters).then((res) => {
       if (!cancelled) { setData(res); setLoading(false); }
     }).catch(() => { if (!cancelled) setLoading(false); });
@@ -84,18 +83,31 @@ export default function UsagePage() {
     if (!data) return null;
     return data.series.map((point) => ({
       ...point,
-      webSearches: 0,
-      latencyMs: 0,
-      errorRate: 0,
+      webSearches: data.totals.webSearches,
+      latencyMs: data.totals.latencyMs,
+      errorRate: data.totals.errorRate,
     }));
   }, [data]);
 
   const setFilter = (patch: Partial<UsageFilters>) => {
+    setLoading(true);
     setFilters((prev) => ({ ...prev, ...patch }));
   };
 
   const handleExport = () => {
-    toast.success("CSV export started");
+    if (!data) return;
+    const rows = [
+      ["time", "spend_myr", "requests", "tokens"],
+      ...data.series.map((point) => [point.time, String(point.spend), String(point.requests), String(point.tokens)])
+    ];
+    const csv = rows.map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `atlasflux-usage-${filters.range}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV export downloaded");
   };
 
   return (
@@ -109,7 +121,7 @@ export default function UsagePage() {
               <Download className="size-4" aria-hidden="true" />
               Export CSV
             </Button>
-            <Button variant="ghost" onClick={() => toast.info("Filters reset")}>
+            <Button variant="ghost" onClick={() => { setLoading(true); setFilters(DEFAULT_FILTERS); toast.info("Filters reset"); }}>
               <RefreshCw className="size-4" aria-hidden="true" />
               Reset
             </Button>

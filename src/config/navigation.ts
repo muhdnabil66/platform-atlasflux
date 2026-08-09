@@ -3,7 +3,6 @@ import {
   BookOpen,
   Bot,
   CircleDollarSign,
-  FileText,
   KeyRound,
   LayoutDashboard,
   LifeBuoy,
@@ -13,11 +12,19 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
+import { createElement, type ComponentType, type ReactNode } from "react";
+
+function AtlasIcon({ className }: { className?: string }): ReactNode {
+  return createElement(Image, { src: "/atlas.png", alt: "", width: 16, height: 16, className, "aria-hidden": true });
+}
+
+type NavigationIcon = LucideIcon | ComponentType<{ className?: string; "aria-hidden"?: boolean | string }>;
 
 export interface NavItem {
   title: string;
   href: string;
-  icon: LucideIcon;
+  icon: NavigationIcon;
 }
 
 export interface NavSection {
@@ -48,8 +55,9 @@ export const dashboardNavigation: NavSection[] = [
     title: "Resources",
     items: [
       { title: "Documentation", href: "https://api-docs.atlasflux.my", icon: BookOpen },
+      { title: "Status", href: "https://status.atlasflux.my", icon: Activity },
       { title: "Settings", href: "/dashboard/settings", icon: Settings },
-      { title: "AtlasFlux AI", href: "https://ai.atlasflux.my", icon: FileText },
+      { title: "AtlasFlux AI", href: "https://ai.atlasflux.my", icon: AtlasIcon },
     ],
   },
 ];
@@ -64,5 +72,5 @@ export const topLevelItems: NavItem[] = [
   { title: "Web Search", href: "/dashboard/web-search", icon: Wrench },
   { title: "Billing", href: "/dashboard/billing", icon: CircleDollarSign },
   { title: "Settings", href: "/dashboard/settings", icon: Settings },
-  { title: "Support", href: "#", icon: LifeBuoy },
+  { title: "Support", href: "mailto:support@atlasflux.my", icon: LifeBuoy },
 ];

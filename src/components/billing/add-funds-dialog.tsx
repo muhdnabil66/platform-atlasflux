@@ -22,11 +22,10 @@ import { formatRM } from "@/lib/format";
 interface AddFundsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdded?: (amount: number) => void;
   presetAmount?: number;
 }
 
-export function AddFundsDialog({ open, onOpenChange, onAdded, presetAmount }: AddFundsDialogProps) {
+export function AddFundsDialog({ open, onOpenChange, presetAmount }: AddFundsDialogProps) {
   const { getToken } = useAuth();
   const [amount, setAmount] = useState<number>(popularTopUp);
   const [custom, setCustom] = useState(false);

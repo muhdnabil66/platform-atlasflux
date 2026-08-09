@@ -18,10 +18,18 @@ export const API_BASE_URL =
  * Token provider function. Set by the auth system to provide fresh Clerk
  * session tokens for each API request. Never stale.
  */
-let tokenProvider: (() => Promise<string | null>) | null = null;
+type TokenProvider = () => Promise<string | null>;
 
-export function setTokenProvider(provider: () => Promise<string | null>): void {
+let tokenProvider: TokenProvider | null = null;
+let resolveTokenProviderReady: (() => void) | null = null;
+const tokenProviderReady = new Promise<void>((resolve) => {
+  resolveTokenProviderReady = resolve;
+});
+
+export function setTokenProvider(provider: TokenProvider): void {
   tokenProvider = provider;
+  resolveTokenProviderReady?.();
+  resolveTokenProviderReady = null;
 }
 
 async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
@@ -33,11 +41,13 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
     headers["Content-Type"] = "application/json";
   }
 
-  if (tokenProvider) {
-    const token = await tokenProvider();
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+  if (!tokenProvider) {
+    await tokenProviderReady;
+  }
+
+  const token = tokenProvider ? await tokenProvider() : null;
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -47,10 +57,14 @@ async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     if (res.status === 401) {
-      if (typeof window !== "undefined") {
+      if (!token && typeof window !== "undefined" && !window.location.pathname.startsWith("/sign-in")) {
         window.location.assign(new URL("/sign-in", window.location.origin));
       }
-      throw new Error("Session expired. Please sign in again.");
+      throw new Error(
+        token
+          ? "The API rejected the current Clerk session. Check that the API and dashboard use the same Clerk instance."
+          : "Session expired. Please sign in again."
+      );
     }
     const body = await res.json().catch(() => null);
     const message =
@@ -181,32 +195,54 @@ export function getUsageData(filters: UsageFilters): Promise<UsageSummary> {
     granularity: filters.range === "24h" ? "hour" : "day",
   });
   if (filters.apiKey) params.set("api_key_id", filters.apiKey);
-  return apiRequest<{ from: string; to: string; granularity: string; series: Array<{ time: string; timestamp: number; spend: number; requests: number; tokens: number }> }>(
+  return apiRequest<{
+    from: string;
+    to: string;
+    granularity: string;
+    series: Array<{ bucket: string; requests: number; costMicroMyr: number; inputTokens: number; outputTokens: number; reasoningTokens: number; searchCount: number; contentPages: number; latencySumMs: number; successfulRequests: number; failedRequests: number }>;
+    overview: { requests: number; inputTokens: number; outputTokens: number; reasoningTokens: number; searchCount: number; contentPages: number; costMicroMyr: number; latencySumMs: number; failedRequests: number };
+    cost_breakdown: { inputCostMicroMyr: number; outputCostMicroMyr: number; reasoningCostMicroMyr: number; searchCostMicroMyr: number; contentCostMicroMyr: number };
+    by_key: Array<{ key_id: string; key_name: string; prefix: string; requests: number; tokens: number; searches: number; spend_micro_myr: number }>;
+  }>(
     `/dashboard/usage?${params.toString()}`
   ).then((res) => {
-    const totalSpend = res.series.reduce((a, s) => a + s.spend, 0);
-    const totalRequests = res.series.reduce((a, s) => a + s.requests, 0);
-    const totalTokens = res.series.reduce((a, s) => a + s.tokens, 0);
-    const totalSearches = 0;
+    const series = res.series.map((point) => ({
+      time: point.bucket,
+      timestamp: new Date(point.bucket).getTime(),
+      spend: Number((point.costMicroMyr / 1_000_000).toFixed(6)),
+      requests: point.requests,
+      tokens: point.inputTokens + point.outputTokens + point.reasoningTokens,
+    }));
+    const totalSpend = Number((res.overview.costMicroMyr / 1_000_000).toFixed(6));
+    const totalRequests = res.overview.requests;
+    const totalTokens = res.overview.inputTokens + res.overview.outputTokens + res.overview.reasoningTokens;
     return {
       filters,
-      series: res.series,
+      series,
       totals: {
         spend: totalSpend,
         requests: totalRequests,
         tokens: totalTokens,
-        webSearches: totalSearches,
-        latencyMs: 0,
-        errorRate: 0,
+        webSearches: res.overview.searchCount,
+        latencyMs: totalRequests > 0 ? Math.round(res.overview.latencySumMs / totalRequests) : 0,
+        errorRate: totalRequests > 0 ? res.overview.failedRequests / totalRequests : 0,
       },
       costBreakdown: {
-        inputTokenCost: 0,
-        outputTokenCost: 0,
-        reasoningCost: 0,
-        searchCost: 0,
-        contentCost: 0,
+        inputTokenCost: Number((res.cost_breakdown.inputCostMicroMyr / 1_000_000).toFixed(6)),
+        outputTokenCost: Number((res.cost_breakdown.outputCostMicroMyr / 1_000_000).toFixed(6)),
+        reasoningCost: Number((res.cost_breakdown.reasoningCostMicroMyr / 1_000_000).toFixed(6)),
+        searchCost: Number((res.cost_breakdown.searchCostMicroMyr / 1_000_000).toFixed(6)),
+        contentCost: Number((res.cost_breakdown.contentCostMicroMyr / 1_000_000).toFixed(6)),
       },
-      byKey: [],
+      byKey: res.by_key.map((key) => ({
+        keyId: key.key_id,
+        keyName: key.key_name,
+        prefix: key.prefix,
+        requests: key.requests,
+        tokens: key.tokens,
+        searches: key.searches,
+        spend: Number((key.spend_micro_myr / 1_000_000).toFixed(6)),
+      })),
       byCategory: [],
     };
   });
@@ -305,19 +341,55 @@ interface BackendBillingResponse {
   reserved_myr: number;
   lifetime_topup_myr: number;
   lifetime_spend_myr: number;
+  usage_30d: {
+    requests: number;
+    inputTokens: number;
+    outputTokens: number;
+    reasoningTokens: number;
+    costMicroMyr: number;
+  };
+  auto_reload: {
+    enabled: boolean;
+    threshold_myr: string | null;
+    amount_myr: string | null;
+    monthly_max_myr: string | null;
+  };
 }
 
 function adaptBilling(res: BackendBillingResponse): BillingSummary {
   const balance = res.balance_myr ?? 0;
-  const avgCostPerRequest = 0.006;
-  const avgTokensPerRequest = 3000;
+  const requestCount = res.usage_30d?.requests ?? 0;
+  const spend30d = Number(((res.usage_30d?.costMicroMyr ?? 0) / 1_000_000).toFixed(6));
+  const avgCostPerRequest = requestCount > 0 ? spend30d / requestCount : 0;
+  const avgTokensPerRequest = requestCount > 0
+    ? Math.round(((res.usage_30d.inputTokens ?? 0) + (res.usage_30d.outputTokens ?? 0) + (res.usage_30d.reasoningTokens ?? 0)) / requestCount)
+    : 0;
   return {
     balance,
-    estimatedRemainingRequests: Math.floor(balance / avgCostPerRequest),
-    estimatedRemainingTokens: Math.floor(balance / avgCostPerRequest) * avgTokensPerRequest,
-    autoReload: { enabled: false, threshold: 20, amount: 100, monthlyMaximum: 500 },
-    spend30d: res.lifetime_spend_myr ?? 0,
+    estimatedRemainingRequests: avgCostPerRequest > 0 ? Math.floor(balance / avgCostPerRequest) : 0,
+    estimatedRemainingTokens: avgCostPerRequest > 0 ? Math.floor(balance / avgCostPerRequest) * avgTokensPerRequest : 0,
+    autoReload: {
+      enabled: res.auto_reload?.enabled ?? false,
+      threshold: Number(res.auto_reload?.threshold_myr ?? 0),
+      amount: Number(res.auto_reload?.amount_myr ?? 0),
+      monthlyMaximum: res.auto_reload?.monthly_max_myr != null ? Number(res.auto_reload.monthly_max_myr) : null,
+    },
+    spend30d,
   };
+}
+
+export function renameApiKey(id: string, name: string): Promise<void> {
+  return apiRequest<{ key: BackendApiKey }>(`/dashboard/api-keys/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name }),
+  }).then(() => {});
+}
+
+export function revokeApiKey(id: string): Promise<void> {
+  return apiRequest<{ key: BackendApiKey }>(`/dashboard/api-keys/${id}/revoke`, {
+    method: "POST",
+    body: "{}",
+  }).then(() => {});
 }
 
 interface BackendLedgerEntry {
@@ -382,6 +454,8 @@ interface BackendLogEntry {
   latencyMs: number | null;
   routingCategory: string | null;
   createdAt: string;
+  errorCode?: string | null;
+  usageSource?: "provider" | "estimated";
 }
 
 function adaptLog(entry: BackendLogEntry): RequestLog {
@@ -406,6 +480,7 @@ function adaptLog(entry: BackendLogEntry): RequestLog {
     routingCategory: entry.routingCategory ?? "general",
     reasoningEffort: "medium",
     searchDepth: "off",
+    error: entry.errorCode ?? null,
   };
 }
 
@@ -419,6 +494,7 @@ export function getRequestLogs(opts: {
   if (opts.limit) params.set("limit", String(opts.limit));
   if (opts.offset) params.set("page", String(Math.floor((opts.offset / (opts.limit ?? 20)) + 1)));
   if (opts.status && opts.status !== "all") params.set("status", opts.status);
+  if (opts.search?.trim()) params.set("search", opts.search.trim());
   return apiRequest<{ logs: BackendLogEntry[]; total: number }>(
     `/dashboard/logs?${params.toString()}`
   ).then((res) => ({

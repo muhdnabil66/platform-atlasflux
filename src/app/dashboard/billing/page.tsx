@@ -21,8 +21,6 @@ import { cn } from "@/lib/utils";
 export default function BillingPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [preset, setPreset] = useState<number | undefined>(undefined);
-  const [balance, setBalance] = useState<number | null>(null);
-
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [txLoading, setTxLoading] = useState(true);
@@ -35,10 +33,6 @@ export default function BillingPage() {
   const openDialog = (amount?: number) => {
     setPreset(amount);
     setDialogOpen(true);
-  };
-
-  const handleAdded = (amount: number) => {
-    setBalance((prev) => (prev === null ? prev : prev + amount));
   };
 
   return (
@@ -59,7 +53,7 @@ export default function BillingPage() {
           <>
             <StatCard
               label="Current balance"
-              value={formatRM(balance ?? billing.balance)}
+              value={formatRM(billing.balance)}
               icon={Wallet}
               hint="Remaining prepaid balance in MYR"
               footer={`Spend last 30 days: ${formatRM(billing.spend30d)}`}
@@ -158,7 +152,6 @@ export default function BillingPage() {
       <AddFundsDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        onAdded={handleAdded}
         presetAmount={preset}
       />
     </div>

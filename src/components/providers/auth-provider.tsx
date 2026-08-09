@@ -37,8 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clerkUser]);
 
   const signIn = useCallback(async () => {
-    return Promise.resolve();
-  }, []);
+    await clerk.redirectToSignIn({ redirectUrl: "/dashboard/overview" });
+  }, [clerk]);
 
   const signOut = useCallback(async () => {
     await clerk.signOut();
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
-      isClerkConfigured: true,
+      isClerkConfigured: Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY),
       isLoaded,
       isSignedIn: isSignedIn ?? false,
       signIn,

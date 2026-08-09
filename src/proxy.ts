@@ -1,18 +1,20 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-const publicRoutes = createRouteMatcher([
-  "/",
-  "/pricing",
-  "/models",
-  "/docs",
-  "/sign-in",
-  "/sign-up(.*)",
-  "/sso-callback(.*)",
-  "/api/webhooks(.*)",
-]);
+const publicRoutePatterns = [
+  /^\/$/,
+  /^\/(?:pricing|models|docs)(?:\/.*)?$/,
+  /^\/sign-in(?:\/.*)?$/,
+  /^\/sign-up(?:\/.*)?$/,
+  /^\/sso-callback(?:\/.*)?$/,
+  /^\/api\/webhooks(?:\/.*)?$/,
+];
+
+function isPublicRoute(pathname: string) {
+  return publicRoutePatterns.some((pattern) => pattern.test(pathname));
+}
 
 export default clerkMiddleware(async (auth, request) => {
-  if (publicRoutes(request)) {
+  if (isPublicRoute(request.nextUrl.pathname)) {
     return;
   }
 

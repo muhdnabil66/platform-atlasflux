@@ -10,22 +10,23 @@ import { setTokenProvider } from "@/lib/api-client";
  * Gets a fresh token for each API request (never stale).
  */
 export function ClerkTokenSync() {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
 
   useEffect(() => {
-    // Set the token provider so apiRequest() gets fresh tokens
+    if (!isLoaded) return;
+
+    // Register only after Clerk has resolved the session state. This prevents
+    // dashboard requests from racing the initial auth bootstrap and sending a
+    // request without a Bearer token.
     setTokenProvider(async () => {
+      if (!isSignedIn) return null;
       try {
         return await getToken();
       } catch {
         return null;
       }
     });
-
-    return () => {
-      setTokenProvider(() => Promise.resolve(null));
-    };
-  }, [getToken]);
+  }, [getToken, isLoaded, isSignedIn]);
 
   return null;
 }

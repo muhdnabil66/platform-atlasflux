@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useClerk } from "@clerk/nextjs";
 import { updateProfile } from "@/lib/api-client";
 
 export function ProfileSection() {
   const { user } = useAuth();
+  const clerk = useClerk();
   const [name, setName] = useState(user?.name ?? "");
   const [email] = useState(user?.email ?? "");
   const [saving, setSaving] = useState(false);
@@ -50,7 +52,7 @@ export function ProfileSection() {
           <p className="text-xs text-muted-foreground">
             Managed by your AtlasFlux account.
           </p>
-          <Button variant="outline" size="sm" className="mt-1.5" disabled>
+          <Button variant="outline" size="sm" className="mt-1.5" onClick={() => clerk.openUserProfile()}>
             Change avatar
           </Button>
         </div>

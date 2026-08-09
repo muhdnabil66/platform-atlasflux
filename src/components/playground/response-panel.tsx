@@ -146,21 +146,17 @@ interface StreamedTextProps {
 
 function StreamedText({ text, stream }: StreamedTextProps) {
   const safeText = text ?? "";
-  const [displayed, setDisplayed] = useState(stream ? "" : safeText);
-  const [streaming, setStreaming] = useState(stream);
+  const [streamedText, setStreamedText] = useState("");
+  const streaming = stream && streamedText.length < safeText.length;
 
   useEffect(() => {
-    if (!stream) {
-      setDisplayed(safeText);
-      return;
-    }
+    if (!stream) return;
     let index = 0;
     const interval = setInterval(() => {
       index += 4 + Math.floor(Math.random() * 6);
-      setDisplayed(safeText.slice(0, index));
+      setStreamedText(safeText.slice(0, index));
       if (index >= safeText.length) {
         clearInterval(interval);
-        setStreaming(false);
       }
     }, 16);
     return () => clearInterval(interval);
@@ -168,7 +164,7 @@ function StreamedText({ text, stream }: StreamedTextProps) {
 
   return (
     <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
-      {displayed}
+      {stream ? streamedText : safeText}
       {streaming && <span className="animate-pulse text-chart-1">▍</span>}
     </pre>
   );

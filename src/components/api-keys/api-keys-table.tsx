@@ -4,7 +4,7 @@ import { useState } from "react";
 import { MoreHorizontal, Pencil, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { ApiKey } from "@/types/api";
-import { deleteApiKey } from "@/lib/api-client";
+import { deleteApiKey, renameApiKey, revokeApiKey } from "@/lib/api-client";
 import {
   Table,
   TableBody,
@@ -46,23 +46,30 @@ export function ApiKeysTable({ keys, onKeysChange }: ApiKeysTableProps) {
   const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ApiKey | null>(null);
 
-  const handleRename = () => {
+  const handleRename = async () => {
     if (!renameTarget) return;
-    const updated = keys.map((k) =>
-      k.id === renameTarget.id ? { ...k, name: renameValue.trim() || k.name } : k
-    );
-    onKeysChange(updated);
-    toast.success("Key renamed");
-    setRenameTarget(null);
+    const name = renameValue.trim();
+    if (!name) return;
+    try {
+      await renameApiKey(renameTarget.id, name);
+      onKeysChange(keys.map((k) => k.id === renameTarget.id ? { ...k, name } : k));
+      toast.success("Key renamed");
+      setRenameTarget(null);
+    } catch {
+      toast.error("Failed to rename key");
+    }
   };
 
-  const handleRevoke = () => {
+  const handleRevoke = async () => {
     if (!revokeTarget) return;
-    onKeysChange(
-      keys.map((k) => (k.id === revokeTarget.id ? { ...k, status: "revoked" as const } : k))
-    );
-    toast.success("Key revoked");
-    setRevokeTarget(null);
+    try {
+      await revokeApiKey(revokeTarget.id);
+      onKeysChange(keys.map((k) => (k.id === revokeTarget.id ? { ...k, status: "revoked" as const } : k)));
+      toast.success("Key revoked");
+      setRevokeTarget(null);
+    } catch {
+      toast.error("Failed to revoke key");
+    }
   };
 
   const handleDelete = async () => {
