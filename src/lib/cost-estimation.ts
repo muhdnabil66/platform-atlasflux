@@ -34,14 +34,14 @@ export function estimatePlaygroundCost(config: PlaygroundConfig): CostEstimate {
 
   const searches = searchCountFor(config);
   const searchPrice = SEARCH_PRICES[config.searchDepth] ?? 0.06;
-  const resultsCharge = config.maxResults > 10 ? (config.maxResults - 10) * 0.005 : 0;
+  const resultsCharge = config.maxResults > 20 ? 0.13 : config.maxResults > 10 ? 0.05 : 0;
   const contentPages = config.contentExtraction ? Math.min(config.maxContentPages, 1 + Math.ceil(searches / 2)) : 0;
 
   const inputCost = round2((inputTokens * 5) / 1_000_000);
   const outputCost = round2((outputTokens * 25) / 1_000_000);
   const reasoningCost = round2((reasoningTokens * 25) / 1_000_000);
-  const searchCost = round2(searches * searchPrice + resultsCharge);
-  const contentCost = round2(contentPages * 0.02);
+  const searchCost = round2(searches * (searchPrice + resultsCharge));
+  const contentCost = round2(contentPages * 0.01);
   const totalCost = round2(inputCost + outputCost + reasoningCost + searchCost + contentCost);
 
   return {

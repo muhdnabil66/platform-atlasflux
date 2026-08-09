@@ -131,7 +131,7 @@ export function ConfigPanel({ config, onChange }: ConfigPanelProps) {
             id="max-output"
             type="number"
             min={1}
-            max={65536}
+            max={32000}
             value={config.maxOutputTokens}
             onChange={(e) => onChange({ maxOutputTokens: Number(e.target.value) || 1 })}
           />
@@ -247,7 +247,7 @@ export function ConfigPanel({ config, onChange }: ConfigPanelProps) {
               onChange={(e) => onChange({ maxContentPages: clamp(Number(e.target.value), 1, 10) })}
             />
             <p className="text-xs text-muted-foreground">
-              Billed at {formatRM(0.02)} per extracted page.
+              Billed at {formatRM(0.01)} per extracted page.
             </p>
           </div>
         )}

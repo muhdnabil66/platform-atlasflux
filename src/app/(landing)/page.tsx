@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hero } from "@/components/landing/hero";
 import { Capabilities } from "@/components/landing/capabilities";
 import { ModelSection } from "@/components/landing/model-section";
 import { PricingSection } from "@/components/landing/pricing-section";
+import { LandingPrimaryCta } from "@/components/landing/auth-actions";
 
 export default function LandingPage() {
   return (
@@ -24,12 +24,7 @@ export default function LandingPage() {
               in under five minutes. Your balance is prepaid and always visible.
             </p>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <Button asChild size="lg">
-                <Link href="/sign-in">
-                  Get API key
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-              </Button>
+              <LandingPrimaryCta />
               <Button asChild variant="outline" size="lg">
                 <Link href="https://api-docs.atlasflux.my">Read the docs</Link>
               </Button>

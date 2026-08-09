@@ -68,16 +68,16 @@ export default function WebSearchPage() {
           <ul className="flex flex-col gap-2.5">
             <li className="flex items-start justify-between gap-4 rounded-lg border bg-background p-3 text-sm">
               <span className="text-muted-foreground">
-                More than 10 results in a single search
+                Results 11-20 / results 21-25 in a single search
               </span>
               <span className="shrink-0 font-mono font-medium tabular-nums">
-                +{formatRM(0.005)} per result
+                +{formatRM(0.05)} / +{formatRM(0.13)} per search
               </span>
             </li>
             <li className="flex items-start justify-between gap-4 rounded-lg border bg-background p-3 text-sm">
               <span className="text-muted-foreground">Content extraction</span>
               <span className="shrink-0 font-mono font-medium tabular-nums">
-                {formatRM(0.02)} per page
+                {formatRM(0.01)} per page
               </span>
             </li>
           </ul>

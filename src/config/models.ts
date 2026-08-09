@@ -8,9 +8,9 @@ export const nenasFlash: ModelInfo = {
   tagline: "The AtlasFlux model. One ID for reasoning, multimodal input, web search and structured output.",
   description:
     "Nenas Flash is the primary model on the AtlasFlux platform. It exposes a single OpenAI-compatible API while AtlasFlux routes each request to the best upstream model for the task. Reasoning effort, web search and output structure are controlled through request parameters.",
-  inputTypes: ["Text", "Images", "Audio", "Documents"],
+  inputTypes: ["Text", "Images"],
   contextWindow: "1M tokens",
-  maxOutputTokens: 65536,
+  maxOutputTokens: 32000,
   multimodal: true,
   reasoning: true,
   webSearch: true,

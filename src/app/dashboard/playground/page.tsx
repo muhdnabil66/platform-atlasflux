@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ConfigPanel } from "@/components/playground/config-panel";
 import { PromptPanel } from "@/components/playground/prompt-panel";
 import { ResponsePanel } from "@/components/playground/response-panel";
+import { buildPayload } from "@/components/playground/snippets";
 
 const DEFAULT_CONFIG: PlaygroundConfig = {
   model: nenasFlash.id,
@@ -60,30 +61,19 @@ export default function PlaygroundPage() {
     setResponse(null);
     try {
       const token = await getToken();
-      const res = await fetch(`${API_BASE_URL}/v1/responses`, {
+      const res = await fetch(`${API_BASE_URL}/dashboard/playground`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          model: config.model,
-          input: config.input,
-          temperature: config.temperature,
-          max_output_tokens: config.maxOutputTokens,
-          reasoning: { effort: config.reasoning },
-          ...(config.searchMode !== "off" ? {
-            web_search: {
-              mode: config.searchMode,
-              search_depth: config.searchDepth,
-              max_results: config.maxResults,
-              max_searches: config.maxSearches,
-              content: { enabled: config.contentExtraction, max_pages: config.maxContentPages },
-            },
-          } : {}),
-        }),
+        body: JSON.stringify(buildPayload(config)),
       });
-      const data = await res.json();
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => null);
+        throw new Error(errorBody?.error?.message ?? `Request failed with status ${res.status}`);
+      }
+      const data = config.stream ? await readCompletedStream(res) : await res.json();
       const normalized: PlaygroundResponse = {
         content: data.output_text ?? data.content ?? data.output ?? data.choices?.[0]?.message?.content ?? "",
         citations: data.citations ?? [],
@@ -117,8 +107,8 @@ export default function PlaygroundPage() {
       };
       setResponse(normalized);
       toast.success("Request completed");
-    } catch {
-      toast.error("Request failed");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Request failed");
     } finally {
       setRunning(false);
     }
@@ -175,4 +165,33 @@ export default function PlaygroundPage() {
       </div>
     </div>
   );
+}
+
+async function readCompletedStream(response: Response) {
+  if (!response.body) throw new Error("The streaming response did not include a body.");
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done });
+    const frames = buffer.split("\n\n");
+    buffer = frames.pop() ?? "";
+    for (const frame of frames) {
+      const event = frame.split("\n").find((line) => line.startsWith("event:"))?.slice(6).trim();
+      const dataLine = frame.split("\n").find((line) => line.startsWith("data:"));
+      if (!dataLine) continue;
+      const payload = JSON.parse(dataLine.slice(5).trim());
+      if (event === "response.failed") {
+        throw new Error(payload?.error?.error?.message ?? payload?.error?.message ?? "Request failed");
+      }
+      if (event === "response.completed" && payload?.response) {
+        return payload.response;
+      }
+    }
+    if (done) break;
+  }
+
+  throw new Error("The stream ended before AtlasFlux returned a completed response.");
 }

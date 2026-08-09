@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CodeBlock } from "@/components/shared/code-block";
 import { Badge } from "@/components/ui/badge";
+import { LandingPrimaryCta } from "@/components/landing/auth-actions";
 
 const REQUEST_CODE = `curl https://api.atlasflux.my/v1/responses \\
   -H "Authorization: Bearer $ATLASFLUX_API_KEY" \\
@@ -16,15 +17,23 @@ const REQUEST_CODE = `curl https://api.atlasflux.my/v1/responses \\
   }'`;
 
 const RESPONSE_CODE = `{
-  "id": "resp_8f2k3m9x",
+  "id": "resp_arq_8f2k3m9x",
+  "object": "response",
+  "status": "completed",
   "model": "atlasflux/nenas-flash",
-  "output": "This architecture uses a single API gateway...",
+  "output_text": "This architecture uses a single API gateway...",
   "usage": {
     "input_tokens": 1842,
     "output_tokens": 512,
-    "reasoning_tokens": 640
+    "reasoning_tokens": 640,
+    "cached_tokens": 0,
+    "searches": 0,
+    "content_pages": 0,
+    "total_tokens": 2994,
+    "cost_myr": "0.04",
+    "latency_ms": 1840
   },
-  "cost_myr": 0.0192
+  "request_id": "arq_8f2k3m9x"
 }`;
 
 export function Hero() {
@@ -48,12 +57,7 @@ export function Hero() {
             model routing.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Button asChild size="lg">
-              <Link href="/sign-in">
-                Get API key
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
-            </Button>
+            <LandingPrimaryCta />
             <Button asChild variant="outline" size="lg">
               <Link href="https://api-docs.atlasflux.my">
                 <BookOpen className="size-4" aria-hidden="true" />

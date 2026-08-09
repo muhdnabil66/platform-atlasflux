@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
+import { LandingAuthActions } from "@/components/landing/auth-actions";
 
 const LINKS = [
   { label: "Product", href: "/#product" },
@@ -52,22 +52,18 @@ export function Navbar() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/sign-in">Sign in</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/sign-in">Get API key</Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
+          <div className="hidden items-center gap-2 md:flex">
+            <LandingAuthActions />
+          </div>
+          <button
+            type="button"
+            className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
           >
             {open ? <X className="size-4" aria-hidden="true" /> : <Menu className="size-4" aria-hidden="true" />}
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -102,12 +98,7 @@ export function Navbar() {
             )
           )}
           <div className="mt-2 flex items-center gap-2">
-            <Button asChild variant="outline" size="sm" className="flex-1" onClick={() => setOpen(false)}>
-              <Link href="/sign-in">Sign in</Link>
-            </Button>
-            <Button asChild size="sm" className="flex-1" onClick={() => setOpen(false)}>
-              <Link href="/sign-in">Get API key</Link>
-            </Button>
+            <LandingAuthActions mobile onNavigate={() => setOpen(false)} />
           </div>
         </nav>
       </div>

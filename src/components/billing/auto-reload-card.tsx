@@ -33,7 +33,7 @@ export function AutoReloadCard({ initial }: { initial: AutoReloadConfig }) {
           enabled,
           threshold_myr: threshold,
           amount_myr: amount,
-          monthly_max_myr: monthlyMaximum,
+          monthly_max_myr: monthlyMaximum && monthlyMaximum > 0 ? monthlyMaximum : null,
         },
       });
       toast.success("Auto-reload settings saved");
@@ -125,12 +125,11 @@ export function AutoReloadCard({ initial }: { initial: AutoReloadConfig }) {
         {enabled && (
           <p className="mt-3 text-xs text-muted-foreground">
             When your balance drops below {formatRM(threshold)}, we add{" "}
-            {formatRM(amount)} automatically. All payments go through Stripe
-            Checkout.
+            {formatRM(amount)} automatically using the saved payment method.
           </p>
         )}
         <div className="mt-4">
-          <Button onClick={handleSave} disabled={!enabled || saving}>
+          <Button onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save settings"}
           </Button>
         </div>

@@ -25,9 +25,9 @@ export function CostCalculator() {
 
   const estimate = useMemo(() => {
     const searchCost = searches * tier.basePrice;
-    const extraResults = Math.max(0, results - 10) * 0.005;
-    const contentCost = pages * 0.02;
-    return searchCost + extraResults + contentCost;
+    const extraResultsPerSearch = results > 20 ? 0.13 : results > 10 ? 0.05 : 0;
+    const contentCost = pages * 0.01;
+    return searchCost + searches * extraResultsPerSearch + contentCost;
   }, [tier, results, pages, searches]);
 
   return (
@@ -101,10 +101,10 @@ export function CostCalculator() {
         <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground">
           <dt>Base ({tier.name}):</dt>
           <dd className="tabular-nums text-right">{formatRM(tier.basePrice)} / search</dd>
-          <dt>Results above 10:</dt>
-          <dd className="tabular-nums text-right">{formatRM(0.005)} / result</dd>
+          <dt>Results 11-20 / 21-25:</dt>
+          <dd className="tabular-nums text-right">+{formatRM(0.05)} / +{formatRM(0.13)} per search</dd>
           <dt>Content extraction:</dt>
-          <dd className="tabular-nums text-right">{formatRM(0.02)} / page</dd>
+          <dd className="tabular-nums text-right">{formatRM(0.01)} / page</dd>
         </dl>
       </div>
     </div>

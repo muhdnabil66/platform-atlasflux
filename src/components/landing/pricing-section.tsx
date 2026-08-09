@@ -1,7 +1,6 @@
-import Link from "next/link";
-import { ArrowRight, Check, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LandingPrimaryCta } from "@/components/landing/auth-actions";
 
 const PRICING_ROWS = [
   {
@@ -111,12 +110,9 @@ export function PricingSection() {
               plans to buy and no expiring credits.
             </p>
             <div className="mt-auto pt-6">
-              <Button asChild size="lg" className="w-full">
-                <Link href="/sign-in">
-                  Get your API key
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-              </Button>
+              <div className="[&>a]:w-full [&>a]:justify-center">
+                <LandingPrimaryCta />
+              </div>
             </div>
           </div>
         </div>

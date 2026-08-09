@@ -12,18 +12,20 @@ export function buildPayload(config: PlaygroundConfig) {
   payload.max_output_tokens = config.maxOutputTokens;
   payload.stream = config.stream;
   payload.reasoning = { effort: config.reasoning };
-  payload.web_search = {
-    mode: config.searchMode,
-    depth: config.searchDepth,
-    max_results: config.maxResults,
-    max_searches: config.maxSearches,
-  };
-  payload.content_extraction = {
-    enabled: config.contentExtraction,
-    max_pages: config.maxContentPages,
-  };
+  if (config.searchMode !== "off") {
+    payload.web_search = {
+      mode: config.searchMode,
+      search_depth: config.searchDepth,
+      max_results: config.maxResults,
+      max_searches: config.maxSearches,
+      content: {
+        enabled: config.contentExtraction,
+        max_pages: config.maxContentPages,
+      },
+    };
+  }
   if (config.maxTotalCost > 0) {
-    payload.max_total_cost = config.maxTotalCost;
+    payload.max_total_cost_myr = config.maxTotalCost;
   }
   return payload;
 }
@@ -34,16 +36,17 @@ export function buildCurlSnippet(config: PlaygroundConfig): string {
     .split("\n")
     .map((line) => `  ${line}`)
     .join("\n");
+  const shellSafeBody = body.trimStart().replaceAll("'", `'"'"'`);
   return `curl https://api.atlasflux.my/v1/responses \\
   -H "Authorization: Bearer $ATLASFLUX_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '${body.trimStart()}'
+  -d '${shellSafeBody}'
 `;
 }
 
 export function buildJavaScriptSnippet(config: PlaygroundConfig): string {
   const payload = JSON.stringify(buildPayload(config), null, 2);
-  return `const res = await fetch("https://api.atlasflux.my/v1/responses", {
+  const request = `const res = await fetch("https://api.atlasflux.my/v1/responses", {
   method: "POST",
   headers: {
     "Authorization": \`Bearer \${process.env.ATLASFLUX_API_KEY}\`,
@@ -52,23 +55,52 @@ export function buildJavaScriptSnippet(config: PlaygroundConfig): string {
   body: JSON.stringify(${payload}),
 });
 
+if (!res.ok) throw new Error(await res.text());`;
+
+  if (config.stream) {
+    return `${request}
+
+const reader = res.body.getReader();
+const decoder = new TextDecoder();
+while (true) {
+  const { value, done } = await reader.read();
+  if (done) break;
+  process.stdout.write(decoder.decode(value, { stream: true }));
+}`;
+  }
+
+  return `${request}
 const data = await res.json();
-console.log(data.output);`;
+console.log(data.output_text);`;
 }
 
 export function buildPythonSnippet(config: PlaygroundConfig): string {
   const payload = JSON.stringify(buildPayload(config), null, 2);
-  return `import requests
+  const encodedPayload = JSON.stringify(payload);
+  const request = `import json
+import os
+import requests
 
-payload = ${payload}
+payload = json.loads(${encodedPayload})
 
 resp = requests.post(
     "https://api.atlasflux.my/v1/responses",
-    headers={"Authorization": f"Bearer {ATLASFLUX_API_KEY}"},
+    headers={"Authorization": f"Bearer {os.environ['ATLASFLUX_API_KEY']}"},
     json=payload,
+    stream=${config.stream ? "True" : "False"},
 )
+resp.raise_for_status()`;
+
+  if (config.stream) {
+    return `${request}
+for line in resp.iter_lines(decode_unicode=True):
+    if line:
+        print(line)`;
+  }
+
+  return `${request}
 data = resp.json()
-print(data["output"])`;
+print(data["output_text"])`;
 }
 
 export function snippetForTab(

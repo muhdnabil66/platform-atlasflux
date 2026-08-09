@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { AlertTriangle, CheckCircle2, KeyRound } from "lucide-react";
 import { toast } from "sonner";
@@ -58,7 +58,7 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: CreateKeyDial
     handleSubmit,
     setValue,
     reset,
-    watch,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -70,12 +70,9 @@ export function CreateKeyDialog({ open, onOpenChange, onCreated }: CreateKeyDial
     },
   });
 
-  const environment = watch("environment");
+  const environment = useWatch({ control, name: "environment" });
 
   const close = () => {
-    if (created) {
-      created.secret = "";
-    }
     setCreated(null);
     setConfirmed(false);
     reset();

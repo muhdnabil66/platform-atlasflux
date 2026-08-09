@@ -15,9 +15,8 @@ const COLUMNS = [
     title: "Company",
     links: [
       { label: "AtlasFlux AI", href: "https://ai.atlasflux.my" },
-      { label: "Rainspeed Labs", href: "#" },
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
+      { label: "Rainspeed Labs", href: "https://www.rainspeedlabs.com/" },
+      { label: "Legal & policies", href: "https://ai.atlasflux.my/legal" },
     ],
   },
 ];

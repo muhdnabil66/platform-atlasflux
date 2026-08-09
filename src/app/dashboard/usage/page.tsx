@@ -164,8 +164,8 @@ export default function UsagePage() {
                   { value: "all", label: "All" },
                   { value: "/v1/responses", label: "/v1/responses" },
                   { value: "/v1/chat/completions", label: "/v1/chat/completions" },
-                  { value: "/v1/search", label: "/v1/search" },
                   { value: "/v1/embeddings", label: "/v1/embeddings" },
+                  { value: "/dashboard/playground", label: "Dashboard Playground" },
                 ]}
                 onValueChange={(v) => setFilter({ endpoint: v })}
               />

@@ -232,14 +232,12 @@ export function getUsageData(filters: UsageFilters): Promise<UsageSummary> {
     granularity: filters.range === "24h" ? "hour" : "day",
   });
   if (filters.apiKey && filters.apiKey !== "all") params.set("api_key_id", filters.apiKey);
-  const logParams = new URLSearchParams({
-    from: rangeToIso(filters.range),
-    to: new Date().toISOString(),
-    limit: "200",
-  });
-  if (filters.apiKey && filters.apiKey !== "all") logParams.set("api_key_id", filters.apiKey);
-  return Promise.all([
-    apiRequest<{
+  if (filters.environment !== "all") params.set("environment", filters.environment);
+  if (filters.endpoint !== "all") params.set("endpoint", filters.endpoint);
+  if (filters.status !== "all") params.set("status", filters.status);
+  if (filters.reasoning !== "all") params.set("reasoning_effort", filters.reasoning);
+  if (filters.searchDepth !== "all") params.set("search_depth", filters.searchDepth);
+  return apiRequest<{
     from: string;
     to: string;
     granularity: string;
@@ -247,9 +245,8 @@ export function getUsageData(filters: UsageFilters): Promise<UsageSummary> {
     overview: { requests: number; inputTokens: number; outputTokens: number; reasoningTokens: number; searchCount: number; contentPages: number; costMicroMyr: number; latencySumMs: number; failedRequests: number };
     cost_breakdown: { inputCostMicroMyr: number; outputCostMicroMyr: number; reasoningCostMicroMyr: number; searchCostMicroMyr: number; contentCostMicroMyr: number };
     by_key: Array<{ key_id: string; key_name: string; prefix: string; requests: number; tokens: number; searches: number; spend_micro_myr: number }>;
-    }>(`/dashboard/usage?${params.toString()}`),
-    apiRequest<{ logs: BackendLogEntry[] }>(`/dashboard/logs?${logParams.toString()}`),
-  ]).then(([res, logsResponse]) => {
+    by_category: Array<{ id: string; name: string; requests: number; spend_micro_myr: number }>;
+    }>(`/dashboard/usage?${params.toString()}`).then((res) => {
     const series = res.series.map((point) => ({
       time: point.bucket,
       timestamp: new Date(point.bucket).getTime(),
@@ -287,12 +284,12 @@ export function getUsageData(filters: UsageFilters): Promise<UsageSummary> {
         searches: key.searches,
         spend: Number((key.spend_micro_myr / 1_000_000).toFixed(6)),
       })),
-      byCategory: buildRoutingBreakdown(logsResponse.logs).map((category) => ({
+      byCategory: res.by_category.map((category) => ({
         id: category.id,
         name: category.name,
         requests: category.requests,
-        spend: category.cost,
-        share: category.share,
+        spend: Number((category.spend_micro_myr / 1_000_000).toFixed(6)),
+        share: res.overview.requests > 0 ? category.requests / res.overview.requests : 0,
       })),
     };
   });

@@ -38,14 +38,14 @@ const RATE_ROWS = [
   {
     metric: "Content extraction",
     detail: "Billed per extracted page",
-    price: "RM0.02",
+    price: "RM0.01",
     unit: "per page",
   },
   {
     metric: "Extra search results",
-    detail: "Beyond 10 results in a single search",
-    price: "RM0.005",
-    unit: "per result",
+    detail: "Results 11-20 / results 21-25",
+    price: "+RM0.05 / +RM0.13",
+    unit: "per search",
   },
 ];
 
