@@ -5,6 +5,8 @@ import type {
   CreatedApiKey,
   RequestLog,
   RequestStatus,
+  ReasoningEffort,
+  SearchDepth,
   Transaction,
   UsageFilters,
   UsageSummary,
@@ -506,6 +508,8 @@ interface BackendLogEntry {
   costMicroMyr: number;
   latencyMs: number | null;
   routingCategory: string | null;
+  reasoningEffort?: ReasoningEffort | null;
+  searchDepth?: SearchDepth | null;
   createdAt: string;
   errorCode?: string | null;
   usageSource?: "provider" | "estimated";
@@ -531,8 +535,8 @@ function adaptLog(entry: BackendLogEntry): RequestLog {
     cost: Number((entry.costMicroMyr / 1_000_000).toFixed(4)),
     latencyMs: entry.latencyMs ?? 0,
     routingCategory: entry.routingCategory ?? "general",
-    reasoningEffort: "medium",
-    searchDepth: "off",
+    reasoningEffort: entry.reasoningEffort ?? null,
+    searchDepth: entry.searchDepth ?? null,
     error: entry.errorCode ?? null,
   };
 }

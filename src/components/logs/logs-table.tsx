@@ -172,8 +172,12 @@ function LogsRow({
                   </p>
                 ) : (
                   <p>
-                    Routed via <span className="font-medium text-foreground">{log.routingCategory}</span>{" "}
-                    with {log.reasoningEffort} reasoning and {log.searchDepth} search depth.
+                    Routed via <span className="font-medium text-foreground">{log.routingCategory}</span>.{" "}
+                    {log.reasoningEffort || log.searchDepth ? (
+                      <>Request settings: {log.reasoningEffort ?? "reasoning effort not recorded"} reasoning, {log.searchDepth ?? "search depth not recorded"} search depth.</>
+                    ) : (
+                      <>Reasoning effort and search depth were not recorded for this request.</>
+                    )}{" "}
                     Click the row to view the full request detail.
                   </p>
                 )}
@@ -185,4 +189,3 @@ function LogsRow({
     </>
   );
 }
-

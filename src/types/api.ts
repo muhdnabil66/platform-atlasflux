@@ -216,8 +216,10 @@ export interface RequestLog {
   cost: number;
   latencyMs: number;
   routingCategory: string;
-  reasoningEffort: ReasoningEffort;
-  searchDepth: SearchDepth | "off";
+  // These fields were not persisted by the original API request ledger.
+  // Keep them nullable so the dashboard never presents invented values.
+  reasoningEffort: ReasoningEffort | null;
+  searchDepth: SearchDepth | "off" | null;
   error?: string | null;
   costs?: CostBreakdown;
 }

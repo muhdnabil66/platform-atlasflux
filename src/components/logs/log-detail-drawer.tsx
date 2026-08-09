@@ -166,7 +166,7 @@ function Detail({
   capitalize,
 }: {
   label: string;
-  value: string;
+  value: string | null;
   mono?: boolean;
   capitalize?: boolean;
 }) {
@@ -174,7 +174,7 @@ function Detail({
     <div className="flex flex-col gap-1">
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className={mono ? "font-mono text-[13px] break-all" : capitalize ? "capitalize" : ""}>
-        {value}
+        {value ?? "Not recorded"}
       </dd>
     </div>
   );
