@@ -55,6 +55,7 @@ export const dashboardNavigation: NavSection[] = [
     title: "Resources",
     items: [
       { title: "Documentation", href: "https://api-docs.atlasflux.my", icon: BookOpen },
+      { title: "Help Center", href: "https://support.atlasflux.my", icon: LifeBuoy },
       { title: "Status", href: "https://status.atlasflux.my", icon: Activity },
       { title: "Settings", href: "/dashboard/settings", icon: Settings },
       { title: "AtlasFlux AI", href: "https://ai.atlasflux.my", icon: AtlasIcon },
@@ -72,5 +73,5 @@ export const topLevelItems: NavItem[] = [
   { title: "Web Search", href: "/dashboard/web-search", icon: Wrench },
   { title: "Billing", href: "/dashboard/billing", icon: CircleDollarSign },
   { title: "Settings", href: "/dashboard/settings", icon: Settings },
-  { title: "Support", href: "mailto:support@atlasflux.my", icon: LifeBuoy },
+  { title: "Help Center", href: "https://support.atlasflux.my", icon: LifeBuoy },
 ];

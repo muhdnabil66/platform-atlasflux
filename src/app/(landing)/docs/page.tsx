@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CodeBlock } from "@/components/shared/code-block";
 import { Badge } from "@/components/ui/badge";
@@ -161,12 +161,20 @@ export default function DocsPage() {
         <p className="mt-1.5 text-sm text-muted-foreground">
           Generate an API key and make your first request from the dashboard.
         </p>
-        <Button asChild size="lg" className="mt-4">
-          <Link href="/sign-in">
-            Get API key
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </Button>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Button asChild size="lg">
+            <Link href="/sign-in">
+              Get API key
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <a href="https://support.atlasflux.my" target="_blank" rel="noopener noreferrer">
+              <LifeBuoy className="size-4" aria-hidden="true" />
+              Visit Help Center
+            </a>
+          </Button>
+        </div>
       </div>
     </div>
   );

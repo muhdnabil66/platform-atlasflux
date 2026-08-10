@@ -8,6 +8,7 @@ const COLUMNS = [
       { label: "Models", href: "/models" },
       { label: "Pricing", href: "/pricing" },
       { label: "Documentation", href: "https://api-docs.atlasflux.my" },
+      { label: "Help Center", href: "https://support.atlasflux.my" },
       { label: "API status", href: "https://status.atlasflux.my" },
     ],
   },

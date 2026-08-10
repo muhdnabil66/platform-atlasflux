@@ -28,9 +28,14 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
         <div className="flex-1 overflow-y-auto py-3">
           <SidebarNav onNavigate={() => onOpenChange(false)} />
         </div>
-        <div className="border-t p-3">
-          <Button asChild variant="outline" className="w-full" size="sm">
-            <Link href="https://api-docs.atlasflux.my">View documentation</Link>
+        <div className="flex gap-2 border-t p-3">
+          <Button asChild variant="outline" className="min-w-0 flex-1" size="sm">
+            <Link href="https://api-docs.atlasflux.my">Docs</Link>
+          </Button>
+          <Button asChild variant="outline" className="min-w-0 flex-1" size="sm">
+            <a href="https://support.atlasflux.my" target="_blank" rel="noopener noreferrer">
+              Help Center
+            </a>
           </Button>
         </div>
       </SheetContent>
