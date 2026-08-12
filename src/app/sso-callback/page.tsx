@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { Loader2 } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 export default function SSOCallbackPage() {
   const clerk = useClerk();
@@ -36,10 +36,10 @@ export default function SSOCallbackPage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="flex min-h-dvh items-center justify-center">
+    <div className="dark flex min-h-dvh items-center justify-center bg-[#09090B]">
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Completing sign-in...</p>
+        <LoaderCircle className="size-8 animate-spin text-zinc-500" />
+        <p className="text-sm text-zinc-500">Completing sign-in...</p>
       </div>
     </div>
   );

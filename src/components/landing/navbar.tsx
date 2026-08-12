@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { Logo } from "@/components/logo";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { LandingAuthActions } from "@/components/landing/auth-actions";
 
 const LINKS = [
@@ -21,60 +19,63 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" aria-label="AtlasFlux home" className="outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
-          <Logo />
-        </Link>
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800 bg-[#09090B]/80 backdrop-blur-md">
+      <div className="w-full flex justify-center px-6 py-3.5">
+        <div className="w-full max-w-6xl flex items-center justify-between">
+          <Link href="/" aria-label="AtlasFlux home" className="flex items-center gap-2.5">
+            <Image
+              src="/atlas.png"
+              alt="AtlasFlux"
+              width={28}
+              height={28}
+              className="size-7 rounded-lg object-cover"
+            />
+            <span className="text-white font-semibold text-[15px] tracking-tight">AtlasFlux</span>
+          </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
-          {LINKS.map((link) =>
-            link.href.startsWith("http") ? (
-              <a
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {link.label}
-              </a>
-            ) : (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {link.label}
-              </Link>
-            )
-          )}
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <div className="hidden items-center gap-2 md:flex">
-            <LandingAuthActions />
+          <div className="hidden md:flex items-center gap-7">
+            {LINKS.map((link) =>
+              link.href.startsWith("http") ? (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-zinc-400 hover:text-white transition-colors"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm text-zinc-400 hover:text-white transition-colors"
+                >
+                  {link.label}
+                </Link>
+              )
+            )}
           </div>
-          <button
-            type="button"
-            className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-          >
-            {open ? <X className="size-4" aria-hidden="true" /> : <Menu className="size-4" aria-hidden="true" />}
-          </button>
+
+          <div className="flex items-center gap-4">
+            <div className="hidden md:block">
+              <LandingAuthActions />
+            </div>
+            <button
+              type="button"
+              className="inline-flex size-9 items-center justify-center rounded-md text-zinc-400 transition-colors hover:text-white md:hidden"
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+            >
+              {open ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div
-        className={cn(
-          "overflow-hidden border-t transition-all duration-200 md:hidden",
-          open ? "max-h-96" : "max-h-0 border-t-0"
-        )}
-      >
-        <nav className="flex flex-col gap-1 px-4 py-3" aria-label="Mobile navigation">
+      <div className={`overflow-hidden border-t transition-all duration-200 md:hidden ${open ? "max-h-96" : "max-h-0 border-t-0"}`}>
+        <nav className="flex flex-col gap-1 px-6 py-3 bg-[#09090B]">
           {LINKS.map((link) =>
             link.href.startsWith("http") ? (
               <a
@@ -83,7 +84,7 @@ export function Navbar() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setOpen(false)}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
               >
                 {link.label}
               </a>
@@ -92,17 +93,17 @@ export function Navbar() {
                 key={link.label}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
               >
                 {link.label}
               </Link>
             )
           )}
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-3 px-3">
             <LandingAuthActions mobile onNavigate={() => setOpen(false)} />
           </div>
         </nav>
       </div>
-    </header>
+    </nav>
   );
 }
