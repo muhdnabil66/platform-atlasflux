@@ -605,12 +605,6 @@ export function revokeAllApiKeys(): Promise<{ revoked: number }> {
   });
 }
 
-export function deleteAccount(): Promise<{ ok: boolean }> {
-  return apiRequest<{ ok: boolean }>("/dashboard/account", {
-    method: "DELETE",
-  });
-}
-
 /* ------------------------------------------------------------------ */
 /*  Payment Card / Auto-Reload                                        */
 /* ------------------------------------------------------------------ */

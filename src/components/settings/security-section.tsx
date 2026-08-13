@@ -5,15 +5,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
-import { useRouter } from "next/navigation";
-import { revokeAllApiKeys, deleteAccount } from "@/lib/api-client";
+import { revokeAllApiKeys } from "@/lib/api-client";
 import { useSession, useSessionList } from "@clerk/nextjs";
+
+const ACCOUNT_DELETION_SUPPORT_URL = "https://support.atlasflux.my/dashboard/settings";
 
 export function SecuritySection() {
   const { signOut } = useAuth();
   const { session: currentSession } = useSession();
   const { sessions, isLoaded: sessionsLoaded } = useSessionList();
-  const router = useRouter();
   const [open, setOpen] = useState<"keys" | "sessions" | "account" | null>(null);
   const [loading, setLoading] = useState<"keys" | "sessions" | "account" | null>(null);
 
@@ -44,21 +44,6 @@ export function SecuritySection() {
       toast.success("Other sessions signed out");
     } catch {
       toast.error("Failed to sign out other sessions");
-    } finally {
-      setLoading(null);
-    }
-  };
-
-  const handleDelete = async () => {
-    setOpen(null);
-    setLoading("account");
-    try {
-      await deleteAccount();
-      await signOut();
-      toast.success("Developer account closed");
-      router.push("/");
-    } catch {
-      toast.error("Failed to delete account");
     } finally {
       setLoading(null);
     }
@@ -170,20 +155,10 @@ export function SecuritySection() {
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => setOpen("account")}
-            disabled={loading === "account"}
+            onClick={() => window.location.assign(ACCOUNT_DELETION_SUPPORT_URL)}
           >
-            {loading === "account" ? "Closing..." : "Close account"}
+            Delete account
           </Button>
-          <ConfirmDialog
-            open={open === "account"}
-            onOpenChange={(isOpen) => setOpen(isOpen ? "account" : null)}
-            title="Close your account?"
-            description="This will revoke all API keys and close dashboard access. Financial records are retained for audit."
-            confirmLabel="Close account"
-            variant="destructive"
-            onConfirm={handleDelete}
-          />
         </div>
       </div>
     </div>
