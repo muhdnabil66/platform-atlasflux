@@ -18,8 +18,8 @@ export const nenasFlash: ModelInfo = {
   toolCalling: true,
   structuredOutput: true,
   pricing: {
-    inputPerMillion: 5,
-    outputPerMillion: 25,
+    inputPerMillion: 1.5,
+    outputPerMillion: 4.5,
     webSearchFrom: 0.05,
     reasoningBilledAtOutput: true,
   },

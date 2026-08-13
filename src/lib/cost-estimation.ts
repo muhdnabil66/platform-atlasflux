@@ -17,6 +17,9 @@ export interface CostEstimate {
   aboveLimit: boolean;
 }
 
+const INPUT_RATE_MYR = 1.5;
+const OUTPUT_RATE_MYR = 4.5;
+
 const SEARCH_PRICES: Record<SearchDepth, number> = {
   instant: 0.05,
   fast: 0.05,
@@ -37,12 +40,13 @@ export function estimatePlaygroundCost(config: PlaygroundConfig): CostEstimate {
   const resultsCharge = config.maxResults > 20 ? 0.13 : config.maxResults > 10 ? 0.05 : 0;
   const contentPages = config.contentExtraction ? Math.min(config.maxContentPages, 1 + Math.ceil(searches / 2)) : 0;
 
-  const inputCost = round2((inputTokens * 5) / 1_000_000);
-  const outputCost = round2((outputTokens * 25) / 1_000_000);
-  const reasoningCost = round2((reasoningTokens * 25) / 1_000_000);
+  const inputCost = round2((inputTokens * INPUT_RATE_MYR) / 1_000_000);
+  // Reasoning tokens are billed at the output rate (no separate reasoning price).
+  const outputCost = round2(((outputTokens + reasoningTokens) * OUTPUT_RATE_MYR) / 1_000_000);
+  const reasoningCost = 0;
   const searchCost = round2(searches * (searchPrice + resultsCharge));
   const contentCost = round2(contentPages * 0.01);
-  const totalCost = round2(inputCost + outputCost + reasoningCost + searchCost + contentCost);
+  const totalCost = round2(inputCost + outputCost + searchCost + contentCost);
 
   return {
     inputTokens,

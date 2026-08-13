@@ -37,14 +37,14 @@ export function LandingAuthActions({ mobile = false, onNavigate }: AuthActionsPr
   }
 
   return (
-    <>
+    <div className="flex items-center gap-3">
       <Link href="/sign-in" onClick={onNavigate} className={cn(TEXT_LINK, mobile && "flex-1 px-3")}>
         Sign in
       </Link>
       <Link href="/sign-in" onClick={onNavigate} className={cn(PRIMARY_PILL, mobile && "flex-1")}>
         Get API key
       </Link>
-    </>
+    </div>
   );
 }
 

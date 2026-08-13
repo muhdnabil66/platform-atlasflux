@@ -79,6 +79,28 @@ export function OAuthOnlyForm({ mode }: { mode: AuthMode }) {
           });
         }}
       />
+
+      <p className="text-center text-xs leading-relaxed text-zinc-500">
+        By continuing you agree to our{" "}
+        <a
+          href="https://rainspeedlabs.com/legal/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-zinc-400 underline underline-offset-2 hover:text-white transition-colors"
+        >
+          Terms of Use
+        </a>{" "}
+        and{" "}
+        <a
+          href="https://rainspeedlabs.com/legal/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-zinc-400 underline underline-offset-2 hover:text-white transition-colors"
+        >
+          Privacy Policy
+        </a>
+        .
+      </p>
     </div>
   );
 }

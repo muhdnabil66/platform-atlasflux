@@ -63,7 +63,7 @@ const CAPABILITIES = [
 
 export function Capabilities() {
   return (
-    <section id="product" className="border-b">
+    <section id="product" className="border-b scroll-mt-24">
       <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div className="max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-tight">

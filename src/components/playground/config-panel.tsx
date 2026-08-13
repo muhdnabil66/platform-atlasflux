@@ -102,7 +102,7 @@ export function ConfigPanel({ config, onChange }: ConfigPanelProps) {
           ))}
         </div>
         <p className="text-xs text-muted-foreground">
-          Reasoning tokens are billed at the output rate.
+          Reasoning tokens are included in the output rate.
         </p>
       </div>
 

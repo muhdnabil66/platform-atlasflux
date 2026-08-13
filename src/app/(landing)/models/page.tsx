@@ -96,7 +96,7 @@ export default function ModelsPage() {
               </li>
               <li className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Reasoning</span>
-                <span className="font-mono font-medium tabular-nums">output rate</span>
+                <span className="font-mono font-medium tabular-nums">included in output</span>
               </li>
             </ul>
           </div>

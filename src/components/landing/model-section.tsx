@@ -15,7 +15,7 @@ const FEATURES = [
 
 export function ModelSection() {
   return (
-    <section id="models" className="border-b">
+    <section id="models" className="border-b scroll-mt-24">
       <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div className="max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-tight">
@@ -66,11 +66,11 @@ export function ModelSection() {
             <div className="mt-6 flex flex-col gap-2.5">
               <div className="flex items-center justify-between rounded-lg border bg-background px-4 py-3 text-sm">
                 <span className="text-muted-foreground">Input</span>
-                <span className="font-mono font-medium">RM5 per 1M tokens</span>
+                <span className="font-mono font-medium">RM1.50 per 1M tokens</span>
               </div>
               <div className="flex items-center justify-between rounded-lg border bg-background px-4 py-3 text-sm">
                 <span className="text-muted-foreground">Output</span>
-                <span className="font-mono font-medium">RM25 per 1M tokens</span>
+                <span className="font-mono font-medium">RM4.50 per 1M tokens</span>
               </div>
               <div className="flex items-center justify-between rounded-lg border bg-background px-4 py-3 text-sm">
                 <span className="text-muted-foreground">Web search</span>

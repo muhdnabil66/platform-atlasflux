@@ -287,9 +287,9 @@ export default function UsagePage() {
               <Skeleton className="h-44 w-full" />
             ) : (
               <ul className="flex flex-col divide-y">
-                <CostRow label="Input tokens" hint="RM5 / 1M" value={formatRMExact(data.costBreakdown.inputTokenCost)} />
-                <CostRow label="Output tokens" hint="RM25 / 1M" value={formatRMExact(data.costBreakdown.outputTokenCost)} />
-                <CostRow label="Reasoning" hint="Output rate" value={formatRMExact(data.costBreakdown.reasoningCost)} />
+                <CostRow label="Input tokens" hint="RM1.50 / 1M" value={formatRMExact(data.costBreakdown.inputTokenCost)} />
+                <CostRow label="Output tokens" hint="RM4.50 / 1M, reasoning included" value={formatRMExact(data.costBreakdown.outputTokenCost)} />
+                <CostRow label="Reasoning" hint="Included in output" value={formatRMExact(data.costBreakdown.reasoningCost)} />
                 <CostRow label="Search" hint="Per search" value={formatRMExact(data.costBreakdown.searchCost)} />
                 <CostRow label="Content" hint="Per page" value={formatRMExact(data.costBreakdown.contentCost)} />
               </ul>

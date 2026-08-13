@@ -28,7 +28,7 @@ export function Hero3DStage() {
   };
 
   return (
-    <section className="relative min-h-screen overflow-hidden pt-28" style={{ backgroundColor: "#09090B" }}>
+    <section className="relative min-h-screen overflow-hidden pt-36" style={{ backgroundColor: "#09090B" }}>
       {/* Subtle glow */}
       <div
         className="absolute pointer-events-none"

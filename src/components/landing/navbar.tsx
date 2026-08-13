@@ -18,8 +18,28 @@ const LINKS = [
 export function Navbar() {
   const [open, setOpen] = useState(false);
 
+  const handleSectionClick = (e: React.MouseEvent, href: string) => {
+    const id = href.split("#")[1];
+    if (id && window.location.pathname === "/") {
+      e.preventDefault();
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      setOpen(false);
+    }
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800 bg-[#09090B]/80 backdrop-blur-md">
+      <Link
+        href="/#pricing"
+        onClick={(e) => handleSectionClick(e, "/#pricing")}
+        className="block border-b border-green-500/20 bg-gradient-to-r from-green-500/15 via-emerald-500/10 to-green-500/15 px-6 py-2 text-center transition-colors hover:from-green-500/20 hover:via-emerald-500/15 hover:to-green-500/20"
+      >
+        <span className="text-xs text-green-300 sm:text-sm">
+          <span className="font-semibold">Nenas Flash</span> launch offer —{" "}
+          <span className="font-bold">75% OFF</span> token pricing{" "}
+          <span className="underline underline-offset-2">See pricing</span>
+        </span>
+      </Link>
       <div className="w-full flex justify-center px-6 py-3.5">
         <div className="w-full max-w-6xl flex items-center justify-between">
           <Link href="/" aria-label="AtlasFlux home" className="flex items-center gap-2.5">
@@ -49,6 +69,7 @@ export function Navbar() {
                 <Link
                   key={link.label}
                   href={link.href}
+                  onClick={(e) => handleSectionClick(e, link.href)}
                   className="text-sm text-zinc-400 hover:text-white transition-colors"
                 >
                   {link.label}
@@ -92,7 +113,10 @@ export function Navbar() {
               <Link
                 key={link.label}
                 href={link.href}
-                onClick={() => setOpen(false)}
+                onClick={(e) => {
+                  handleSectionClick(e, link.href);
+                  setOpen(false);
+                }}
                 className="rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-white"
               >
                 {link.label}

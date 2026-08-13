@@ -15,27 +15,21 @@ import { LandingPrimaryCta } from "@/components/landing/auth-actions";
 const PRICING_ROWS = [
   {
     label: "Input",
-    price: "RM5",
+    price: "RM1.50",
     unit: "per 1M tokens",
     hint: "Prompt and system tokens",
   },
   {
     label: "Output",
-    price: "RM25",
+    price: "RM4.50",
     unit: "per 1M tokens",
-    hint: "Generated tokens",
+    hint: "Generated tokens, reasoning included",
   },
   {
     label: "Web search",
     price: "RM0.05",
     unit: "per search",
     hint: "From, depending on depth",
-  },
-  {
-    label: "Reasoning",
-    price: "Output rate",
-    unit: "per 1M tokens",
-    hint: "Reasoning tokens billed at the output rate",
   },
 ];
 
@@ -106,7 +100,7 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="relative py-40 px-6" style={{ backgroundColor: "#09090B" }}>
+    <section id="pricing" className="relative py-40 px-6 scroll-mt-24" style={{ backgroundColor: "#09090B" }}>
       {/* Gradient overlay at top */}
       <div
         className="absolute inset-x-0 top-0 pointer-events-none"
@@ -171,7 +165,9 @@ export function PricingSection() {
             <TiltCard>
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-zinc-300 font-medium text-lg">Rate card</h3>
-                <span className="text-xs text-zinc-600 font-mono">atlasflux/nenas-flash</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/15 border border-green-500/30 px-3 py-1 text-xs font-semibold text-green-400">
+                  75% OFF
+                </span>
               </div>
 
               <ul className="divide-y divide-zinc-800/60">

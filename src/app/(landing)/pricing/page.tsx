@@ -7,26 +7,20 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Usage-based pricing in MYR. Input at RM5 per 1M tokens, output at RM25 per 1M tokens, web search from RM0.05 per search.",
+    "Usage-based pricing in MYR. Input at RM1.50 per 1M tokens, output at RM4.50 per 1M tokens (reasoning included), web search from RM0.05 per search. 75% OFF.",
 };
 
 const RATE_ROWS = [
   {
     metric: "Input",
     detail: "Prompt and system tokens",
-    price: "RM5",
+    price: "RM1.50",
     unit: "per 1M tokens",
   },
   {
     metric: "Output",
-    detail: "Generated tokens",
-    price: "RM25",
-    unit: "per 1M tokens",
-  },
-  {
-    metric: "Reasoning",
-    detail: "Billed at the output rate",
-    price: "RM25",
+    detail: "Generated tokens, reasoning included",
+    price: "RM4.50",
     unit: "per 1M tokens",
   },
   {
@@ -75,7 +69,12 @@ export default function PricingPage() {
 
       <div className="mt-10 grid gap-6 lg:grid-cols-3">
         <div className="rounded-xl border p-7 lg:col-span-2">
-          <h2 className="text-lg font-semibold tracking-tight">Rate card</h2>
+          <h2 className="text-lg font-semibold tracking-tight">
+            Rate card
+            <span className="ml-2 inline-flex items-center rounded-full bg-green-500/15 px-2.5 py-0.5 text-xs font-semibold text-green-600 dark:text-green-400">
+              75% OFF
+            </span>
+          </h2>
           <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[480px] text-sm">
               <thead>

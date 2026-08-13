@@ -102,7 +102,7 @@ export function ProductDirectionSection() {
                 REASON
               </div>
               <div className="absolute px-3 py-1 rounded-md bg-zinc-700/80 text-zinc-300 text-sm font-medium" style={{ left: "58%", top: "-10px" }}>
-                INPUT RM5
+                INPUT RM1.50
               </div>
               <div className="absolute text-zinc-500 text-sm" style={{ left: "74%", top: "-5px" }}>
                 OUTPUT
@@ -127,7 +127,7 @@ export function ProductDirectionSection() {
                 style={{ left: "15%", top: "155px", width: "25%", height: "44px" }}
               >
                 <Braces className="w-3 h-3 text-zinc-600" />
-                <span className="text-zinc-500 text-sm">RM25 / 1M</span>
+                <span className="text-zinc-500 text-sm">RM4.50 / 1M</span>
               </div>
 
               {/* Web search bar */}
